@@ -8,6 +8,7 @@ I put this thing I'm working on up on the Githubz. Let's see if you can get it t
 Let's say you have a `goapp` folder on your `$GOPATH`. Inside that folder, you
 might have a `controllers/foo.go` that looks like this:
 
+	```Go
 	package controllers
 
 	import (
@@ -34,6 +35,7 @@ might have a `controllers/foo.go` that looks like this:
 		// We have to embed a pointer to a DefaultController to properly initialize a controller for the registry
 		controller.Register(&FooController{controller.New()})
 	}
+	```
 
 
 
@@ -48,6 +50,7 @@ the `routing` package does it for you.
 
 Our `goapp/main.go` might be:
 
+	```Go
 	package main
 
 	import (
@@ -66,6 +69,7 @@ Our `goapp/main.go` might be:
 				routing.Resource("bar")))
 		gadget.Go("8090")
 	}
+	```
 
 The routing stuff has tests with comments that should explain the URLs this
 generates if it's fuzzy.
@@ -87,4 +91,8 @@ there will be a mechanism for per-mimetype plugins for transforming the
 `text/html` that will try rendering a template if the value is a struct type or
 a map and for `application/json` that will just pipe it through `json.Marshal`.
 
+![Inspector Gadget](http://www.disneyclips.com/imagesnewb6/imageslwrakr01/inspectorgadget4.gif)
+
 Hope you're loving Hacker School!
+
+
