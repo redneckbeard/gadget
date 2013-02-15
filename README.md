@@ -8,34 +8,34 @@ I put this thing I'm working on up on the Githubz. Let's see if you can get it t
 Let's say you have a `goapp` folder on your `$GOPATH`. Inside that folder, you
 might have a `controllers/foo.go` that looks like this:
 
-	```Go
-	package controllers
+```Go
+package controllers
 
-	import (
-		"gadget/controller"
-		"gadget/requests"
-	)
+import (
+	"gadget/controller"
+	"gadget/requests"
+)
 
-	type FooController struct {
-		// Embed this to implement the Controller interface and get some default methods
-		*controller.DefaultController
-	}
+type FooController struct {
+	// Embed this to implement the Controller interface and get some default methods
+	*controller.DefaultController
+}
 
-	func (c *FooController) Index(r *requests.Request) (int, interface{}) {
-		// Controller methods return a status code an whatever you want the body to be
-		return 200, "I'm a list of foos"
-	}
+func (c *FooController) Index(r *requests.Request) (int, interface{}) {
+	// Controller methods return a status code an whatever you want the body to be
+	return 200, "I'm a list of foos"
+}
 
-	func (c *FooController) Show(r *requests.Request) (int, interface{}) {
-		fooId := r.UrlParams["foo_id"]
-		return 200, "I'm foo #" + fooId
-	}
+func (c *FooController) Show(r *requests.Request) (int, interface{}) {
+	fooId := r.UrlParams["foo_id"]
+	return 200, "I'm foo #" + fooId
+}
 
-	func init() {
-		// We have to embed a pointer to a DefaultController to properly initialize a controller for the registry
-		controller.Register(&FooController{controller.New()})
-	}
-	```
+func init() {
+	// We have to embed a pointer to a DefaultController to properly initialize a controller for the registry
+	controller.Register(&FooController{controller.New()})
+}
+```
 
 
 
@@ -50,26 +50,26 @@ the `routing` package does it for you.
 
 Our `goapp/main.go` might be:
 
-	```Go
-	package main
+```Go
+package main
 
-	import (
-		"gadget"
-		"gadget/routing"
-		_ "goapp/controllers"
-	)
+import (
+	"gadget"
+	"gadget/routing"
+	_ "goapp/controllers"
+)
 
-	func main() {
-		routing.Routes(
-			routing.SetIndex("bar"), 
-			routing.Resource("foo",
-				routing.Resource("baz")),
-			routing.Prefixed("admin", 
-				routing.Resource("foo"),
-				routing.Resource("bar")))
-		gadget.Go("8090")
-	}
-	```
+func main() {
+	routing.Routes(
+		routing.SetIndex("bar"), 
+		routing.Resource("foo",
+			routing.Resource("baz")),
+		routing.Prefixed("admin", 
+			routing.Resource("foo"),
+			routing.Resource("bar")))
+	gadget.Go("8090")
+}
+```
 
 The routing stuff has tests with comments that should explain the URLs this
 generates if it's fuzzy.
