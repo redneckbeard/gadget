@@ -3,7 +3,7 @@ package processor
 import "fmt"
 
 // Processor functions transform an interface{} value into a string for the body of a response
-type Processor func(int, interface{}) (int, string)
+type Processor func(int, interface{}, string) (int, string)
 
 var processors = make(map[string]Processor)
 
@@ -20,7 +20,7 @@ func clear() {
 	}
 }
 
-func Process(status int, body interface{}, mimetype string) (int, string, bool) {
+func Process(status int, body interface{}, mimetype, action string) (int, string, bool) {
 	switch body.(type) {
 	case string:
 		return status, body.(string), false
@@ -29,6 +29,6 @@ func Process(status int, body interface{}, mimetype string) (int, string, bool) 
 	if !ok {
 		return status, fmt.Sprint(body), false
 	}
-	status, processed := processor(status, body)
+	status, processed := processor(status, body, action)
 	return status, processed, true
 }

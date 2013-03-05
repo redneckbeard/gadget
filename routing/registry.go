@@ -41,12 +41,12 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 		req := requests.New(r)
 		for _, route := range routes {
 			if route.Match(req) {
-				status, body := route.Respond(req)
+				status, body, action := route.Respond(req)
 				if status == 301 || status == 302 {
 					http.Redirect(w, r, body.(string), status)
 				} else {
 					contentType := req.ContentType()
-					status, body, changed := processor.Process(status, body, contentType)
+					status, body, changed := processor.Process(status, body, contentType, action)
 					// Assume that if we haven't munged the body interface{} value, we are defaulting to HTML
 					if !changed {
 						contentType = "text/html"

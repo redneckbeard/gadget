@@ -11,6 +11,7 @@ type Request struct {
 
 func New(raw *http.Request) *Request {
 	return &Request{Request: raw, Path: raw.URL.Path[1:], Method: raw.Method}
+}
 
 func (r *Request) ContentType() string {
 	accept := r.Request.Header.Get("Accept")

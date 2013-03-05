@@ -84,20 +84,27 @@ func (route *Route) GetParams(path string) map[string]string {
 	return params
 }
 
-func (route *Route) Respond(r *requests.Request) (int, interface{}) {
+func (route *Route) Respond(r *requests.Request) (status int, body interface{}, action string) {
 	r.UrlParams = route.GetParams(r.Path)
 	atIndex := route.indexPattern.MatchString(r.Path)
 	switch {
 	case atIndex && r.Method == "GET":
-		return route.controller.Index(r)
+		status, body = route.controller.Index(r)
+		action = "index"
 	case atIndex && r.Method == "POST":
-		return route.controller.Create(r)
+		status, body = route.controller.Create(r)
+		action = "create"
 	case !atIndex && r.Method == "GET":
-		return route.controller.Show(r)
+		status, body = route.controller.Show(r)
+		action = "show"
 	case !atIndex && r.Method == "PUT":
-		return route.controller.Update(r)
+		status, body = route.controller.Update(r)
+		action = "update"
 	case !atIndex && r.Method == "DELETE":
-		return route.controller.Destroy(r)
+		status, body = route.controller.Destroy(r)
+		action = "destroy"
+	default:
+		status, body, action = 404, "", ""
 	}
-	return 404, ""
+	return
 }
