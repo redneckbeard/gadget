@@ -50,12 +50,10 @@ func (s *ProcessSuite) TestCallingProcessapplicationjson200StringfooBarBazShould
 }
 
 //Calling `Process` with a function for the body value should return 500, "", true
-func (s *ProcessSuite) TestCallingProcessAnonymousFunctionForBodyValueShouldReturn500True(c *C){
+func (s *ProcessSuite) TestCallingProcessAnonymousFunctionForBodyValueShouldReturn500True(c *C) {
 	Define("application/json", JsonProcessor)
 	status, body, changed := Process(200, JsonProcessor, "application/json")
 	c.Assert(status, Equals, 500)
 	c.Assert(body, Equals, "")
 	c.Assert(changed, Equals, true)
 }
-
-

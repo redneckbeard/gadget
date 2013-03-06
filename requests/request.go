@@ -4,9 +4,9 @@ import "net/http"
 
 type Request struct {
 	*http.Request
-	Path        string
-	Method      string
-	UrlParams   map[string]string
+	Path      string
+	Method    string
+	UrlParams map[string]string
 }
 
 func New(raw *http.Request) *Request {
