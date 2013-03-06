@@ -43,6 +43,10 @@ func (c *TellMethodNameController) Destroy(r *requests.Request) (int, interface{
 	return 200, "destroy"
 }
 
+func (c *TellMethodNameController) Arbitrary(r *requests.Request) (int, interface{}) {
+	return 200, "arbitrary"
+}
+
 //Route.Respond calls a controller's Index method on a GET request that matches the indexPattern
 func (s *RouteSuite) TestRouterespondCallsControllersIndexMethodOnGetRequestThatMatchesIndexpattern(c *C) {
 	r := newRoute("tellmethodname")
@@ -129,6 +133,17 @@ func (s *RouteSuite) TestRouterespondCallsControllersDestroyMethodOnDeleteReques
 	c.Assert(status, Equals, 200)
 	c.Assert(body.(string), Equals, "destroy")
 	c.Assert(action, Equals, "destroy")
+}
+
+//Route.Respond should call an arbitrary exported method when a request path matches its name 
+func (s *RouteSuite) TestRouterespondCallsControllersArbitraryMethodOnDeleteRequestThatMatchesObjectpattern(c *C) {
+	r := newRoute("tellmethodname")
+	r.buildPatterns("")
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tellmethodname/arbitrary", nil)
+	status, body, action := r.Respond(requests.New(req))
+	c.Assert(status, Equals, 200)
+	c.Assert(body.(string), Equals, "arbitrary")
+	c.Assert(action, Equals, "arbitrary")
 }
 
 type URLParamController struct {

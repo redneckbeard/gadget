@@ -88,26 +88,53 @@ func (c *MissionController) Show(r *requests.Request) (int, interface{}) {
 	return 200, "Mission #" + missionId + ": this message will self-destruct."
 }
 
+func (c *MissionController) ChiefQuimby(r *requests.Request) (int, interface{}) {
+	return 200, "You've done it again, Gadget! Don't know how you do it!"
+}
+
 func init() {
 	controller.Register(&MissionController{controller.New()})
 }
 ```
 
-Controller methods have access to a `Request` object that contains a map of any parameters pulled from the URL. They return simply an HTTP status code and any value at all for the body (more on why in a bit). The controller interface requires `Index`, `Show`, `Create`, `Update`, and `Destroy` methods. Embedding a pointer to a `DefaultController` means that these are all implemented for you. However, _this doesn't provide you with anything but 404s_. If you want to take action in response to a particular verb, override the method.
+Controller methods have access to a `Request` object that contains a map of any
+parameters pulled from the URL. They return simply an HTTP status code and any
+value at all for the body (more on why in a bit). The controller interface
+requires `Index`, `Show`, `Create`, `Update`, and `Destroy` methods. Embedding
+a pointer to a `DefaultController` means that these are all implemented for
+you. However, _this doesn't provide you with anything but 404s_. If you want to
+take action in response to a particular verb, override the method.
 
 When we call `controller.Register`, we are then able to `controller.Get` each
 of the registered controllers by the lower-cased name of the controller struct
 type, minus "controller". But you probably won't ever do so directly, because
 the `routing` package does it for you.
 
+The Gadget router will hit controller methods based on the HTTP verbs that you
+would expect: GET routes to `Index` and `Show`, POST to `Create`, PUT to
+`Update`, and DELETE to `Destroy`. The exception is arbitrary additional
+resources. `ChiefQuimby` above would be called for any verb when the requested
+path was `/mission/chiefquimby`.
+
 Running Gadget applications
 ---------------------------
 
-Since your Gadget application is just a Go package, we can build this with `go install inspector`, and voilà -- we have a single-file web application / HTTP server waiting for as `$GOPATH/bin/inspector`.
+Since your Gadget application is just a Go package, we can build this with `go
+install inspector`, and voilà -- we have a single-file web application / HTTP
+server waiting for as `$GOPATH/bin/inspector`.
 
-Because there are some files that don't go into the build, and the build is just an executable, Gadget needs an absolute path that it can assume as the root that all relative filepaths branch off of. In development, this will often simply be the current working directory, and that's the default. However, in production, you might have your binary and your frontend files in completely different locations. For this reason, we can call the `inspector` executable with a `-root` flag and point it at whatever path we please.
+Because there are some files that don't go into the build, and the build is
+just an executable, Gadget needs an absolute path that it can assume as the
+root that all relative filepaths branch off of. In development, this will often
+simply be the current working directory, and that's the default. However, in
+production, you might have your binary and your frontend files in completely
+different locations. For this reason, we can call the `inspector` executable
+with a `-root` flag and point it at whatever path we please.
 
-Gadget assumes that the file root will contain a `static` directory and that you want it to serve the contents thereof as files. By default, it will do so at `/static/`. You can, however, change this to accommodate whatever you have against the word "static"... with the `-static` flag.
+Gadget assumes that the file root will contain a `static` directory and that
+you want it to serve the contents thereof as files. By default, it will do so
+at `/static/`. You can, however, change this to accommodate whatever you have
+against the word "static"... with the `-static` flag.
 
 The command invoked in an upstart job might then look like:
 
@@ -119,12 +146,17 @@ Response processing
 The interface{} value you that you return from a controller method is by
 default piped through `fmt.Sprint`. Strings are predictable, as are numbers;
 other types look more like debugging output. However, Gadget has a mechanism
-for transforming those values based on `Content-Type` or `Accept` headers. By defining processor functions and assigning them to MIME types, you can make the same controller methods speak HTML and JSON.
+for transforming those values based on `Content-Type` or `Accept` headers. By
+defining processor functions and assigning them to MIME types, you can make the
+same controller methods speak HTML and JSON.
 
     processor.Define("application/json", processor.JsonProcessor)
     processor.Define("text/xml", processor.XmlProcessor)
 
-JSON and XML processors are included with Gadget in `github.com/redneckbeard/processor`. Placing the lines above in your `main` function will make Gadget serialize the body values returned from your controller methods when the appropriate headers are found in the request.
+JSON and XML processors are included with Gadget in
+`github.com/redneckbeard/processor`. Placing the lines above in your `main`
+function will make Gadget serialize the body values returned from your
+controller methods when the appropriate headers are found in the request.
 
 Wish list
 ---------
@@ -134,8 +166,8 @@ Here are a few features that are clearly necessary but I have yet to implement:
 * Ability to override numeric ids in URLs with whatever regexp you want
 * A Response type for altering headers, setting cookies, etc.
 * Django-style middleware
-* A Processor function to handle rendering to templates based on controller/action names à la Rails
-* Arbitrary exporteds methods on controllers working as actions
+* A Processor function to handle rendering to templates based on
+  controller/action names à la Rails
 
 Thanks for watching
 -------------------
