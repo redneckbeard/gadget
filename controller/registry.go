@@ -17,14 +17,17 @@ func init() {
 	controllerName = regexp.MustCompile(`(\w+)Controller`)
 }
 
-func Register(c Controller) {
+func NameOf(c Controller) string {
 	name := reflect.TypeOf(c).Elem().Name()
 	matches := controllerName.FindStringSubmatch(name)
 	if matches == nil || len(matches) != 2 {
 		panic("Controller names must adhere to the convention of '<name>Controller'")
 	}
-	name = strings.ToLower(matches[1])
-	controllers[name] = c
+	return strings.ToLower(matches[1])
+}
+
+func Register(c Controller) {
+	controllers[NameOf(c)] = c
 }
 
 func Get(name string) (Controller, error) {

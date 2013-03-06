@@ -1,9 +1,17 @@
 package processor
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+	"strings"
+)
 
 // Processor functions transform an interface{} value into a string for the body of a response
-type Processor func(int, interface{}, string) (int, string)
+type Processor func(int, interface{}, *RouteData) (int, string)
+
+type RouteData struct {
+	ControllerName, Action, Verb string
+}
 
 var processors = make(map[string]Processor)
 
@@ -20,15 +28,27 @@ func clear() {
 	}
 }
 
-func Process(status int, body interface{}, mimetype, action string) (int, string, bool) {
-	switch body.(type) {
-	case string:
-		return status, body.(string), false
+func Process(status int, body interface{}, mimetype string, data *RouteData) (int, string, string, bool) {
+	var (
+		processor Processor
+		matched string
+	)
+	for _, mt := range strings.Split(mimetype, ",") {
+		_, ok := processors[mt]
+		if ok {
+			processor = processors[mt]
+			matched = mt
+			break
+		}
 	}
-	processor, ok := processors[mimetype]
-	if !ok {
-		return status, fmt.Sprint(body), false
+	if processor == nil {
+		bodyContent, ok := body.(string)
+		if !ok {
+			bodyContent = fmt.Sprint(body)
+		}
+		sniffed := http.DetectContentType([]byte(bodyContent))
+		return status, bodyContent, sniffed, false
 	}
-	status, processed := processor(status, body, action)
-	return status, processed, true
+	status, processed := processor(status, body, data)
+	return status, processed, matched, true
 }

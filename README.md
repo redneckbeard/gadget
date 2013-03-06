@@ -158,6 +158,25 @@ JSON and XML processors are included with Gadget in
 function will make Gadget serialize the body values returned from your
 controller methods when the appropriate headers are found in the request.
 
+Gadget also ships with `processor.TemplateProcessor`, which wraps Go's
+excellent html/template package. For any given route, it will load two
+templates:
+
+* `$GADGET_ROOT/templates/base.html`, and
+* `$GADGET_ROOT/templates/<controller_name>/<action_name>.html`, where
+  `controller_name` is the same as the value used in routes, and `action_name`
+is the name of the controller method being invoked as a lowercase string.
+
+If either of these templates is not found, the processor will return a 404. If
+both are found, the resulting `*Template` will be executed with the interface{}
+value returned from the controller method as the context.
+
+This is a thin wrapper around the templating package. There is no abstraction
+around the templating language itself, so the controller method template files
+must explicitly define a template (or multiple templates) and `base.html` must
+reference those templates for the system to actually work.
+
+
 Wish list
 ---------
 
@@ -166,8 +185,6 @@ Here are a few features that are clearly necessary but I have yet to implement:
 * Ability to override numeric ids in URLs with whatever regexp you want
 * A Response type for altering headers, setting cookies, etc.
 * Django-style middleware
-* A Processor function to handle rendering to templates based on
-  controller/action names à la Rails
 
 Thanks for watching
 -------------------

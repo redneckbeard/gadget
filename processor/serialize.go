@@ -5,7 +5,7 @@ import (
 	"encoding/xml"
 )
 
-func JsonProcessor(status int, body interface{}, action string) (int, string) {
+func JsonProcessor(status int, body interface{}, data *RouteData) (int, string) {
 	serialized, err := json.Marshal(body)
 	if err != nil {
 		return 500, ""
@@ -13,7 +13,7 @@ func JsonProcessor(status int, body interface{}, action string) (int, string) {
 	return status, string(serialized)
 }
 
-func XmlProcessor(status int, body interface{}, action string) (int, string) {
+func XmlProcessor(status int, body interface{}, data *RouteData) (int, string) {
 	serialized, err := xml.MarshalIndent(body, "", " ")
 	if err != nil {
 		return 500, ""

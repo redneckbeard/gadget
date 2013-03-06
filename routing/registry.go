@@ -2,6 +2,7 @@ package routing
 
 import (
 	"fmt"
+	"github.com/redneckbeard/gadget/controller"
 	"github.com/redneckbeard/gadget/processor"
 	"github.com/redneckbeard/gadget/requests"
 	"net/http"
@@ -46,12 +47,10 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 					http.Redirect(w, r, body.(string), status)
 				} else {
 					contentType := req.ContentType()
-					status, body, changed := processor.Process(status, body, contentType, action)
+
+					status, body, matched, _ := processor.Process(status, body, contentType, &processor.RouteData{Action: action, ControllerName: controller.NameOf(route.controller), Verb: r.Method})
 					// Assume that if we haven't munged the body interface{} value, we are defaulting to HTML
-					if !changed {
-						contentType = "text/html"
-					}
-					w.Header().Set("Content-Type", contentType)
+					w.Header().Set("Content-Type", matched)
 					w.WriteHeader(status)
 					fmt.Fprint(w, body)
 				}

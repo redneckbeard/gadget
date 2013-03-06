@@ -38,8 +38,8 @@ func Configure() error {
 	return nil
 }
 
-func AbsPath(path string) string {
-	return filepath.Join(e.FileRoot, path)
+func AbsPath(path ...string) string {
+	return filepath.Join(append([]string{e.FileRoot}, path...)...)
 }
 
 func ServeStatic() {
