@@ -89,7 +89,7 @@ func (c *MissionController) Show(r *requests.Request) (int, interface{}) {
 }
 
 func init() {
-	controller.Register(&FooController{controller.New()})
+	controller.Register(&MissionController{controller.New()})
 }
 ```
 
