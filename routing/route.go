@@ -19,11 +19,20 @@ type Route struct {
 }
 
 func arbitraryActions(controller controller.Controller) (actions []string) {
+	defaultActions := []string{"Index", "Show", "Create", "Update", "Destroy"}
 	t := reflect.TypeOf(controller)
 	for i := 0; i < t.NumMethod(); i++ {
 		method := t.Method(i)
 		if method.PkgPath == "" {
-			actions = append(actions, strings.ToLower(method.Name))
+			isDefault := false
+			for _, da := range defaultActions {
+				if method.Name == da {
+					isDefault = true
+				}
+			}
+			if !isDefault {
+				actions = append(actions, strings.ToLower(method.Name))
+			}
 		}
 	}
 	return

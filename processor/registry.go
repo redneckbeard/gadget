@@ -31,7 +31,7 @@ func clear() {
 func Process(status int, body interface{}, mimetype string, data *RouteData) (int, string, string, bool) {
 	var (
 		processor Processor
-		matched string
+		matched   string
 	)
 	for _, mt := range strings.Split(mimetype, ",") {
 		_, ok := processors[mt]
