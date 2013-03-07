@@ -127,8 +127,8 @@ the example above might look like this:
 
 ```Go
 func init() {
-        c := &MissionController{controller.New()}
-	c.Filter([]string{"create", "update", "destroy", UserIsPenny)
+	c := &MissionController{controller.New()}
+	c.Filter([]string{"create", "update", "destroy"}, UserIsPenny)
 	controller.Register(c)
 }
 ```
