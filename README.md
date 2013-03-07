@@ -80,7 +80,7 @@ type MissionController struct {
 }
 
 func (c *MissionController) Index(r *requests.Request) (int, interface{}) {
-	return 200, "I'm a list of foos"
+	return 200, []&struct{Mission string}{{"Dr. Claw"},{"M.A.D. Cat"}}
 }
 
 func (c *MissionController) Show(r *requests.Request) (int, interface{}) {
@@ -93,7 +93,8 @@ func (c *MissionController) ChiefQuimby(r *requests.Request) (int, interface{}) 
 }
 
 func init() {
-	controller.Register(&MissionController{controller.New()})
+        c := &MissionController{controller.New()}
+	controller.Register(c)
 }
 ```
 
@@ -115,6 +116,29 @@ would expect: GET routes to `Index` and `Show`, POST to `Create`, PUT to
 `Update`, and DELETE to `Destroy`. The exception is arbitrary additional
 resources. `ChiefQuimby` above would be called for any verb when the requested
 path was `/mission/chiefquimby`.
+
+### Action filters
+
+When developing a web application, you frequently have a short-circuit pattern
+common to a number of controller methods -- "404 if the user isn't logged in",
+"Redirect if the user isn't authorized", etc. To accommodate code reuse, Gadget
+controllers allow you to define filters on certain actions. Setting one up in
+the example above might look like this:
+
+```Go
+func init() {
+        c := &MissionController{controller.New()}
+	c.Filter([]string{"create", "update", "destroy", UserIsPenny)
+	controller.Register(c)
+}
+```
+
+`UserIsPenny` is just a function with the signature `func(r *requests.Request)
+(int, interface{})` just like a controller method. If this function returns a
+non-zero status code, the controller method that was filtered will never be
+called. If the filter returns a status code of zero, Gadget will move on to the
+next filter for that action until they are exhausted, and then call the
+controller method.
 
 Running Gadget applications
 ---------------------------
