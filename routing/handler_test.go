@@ -25,9 +25,10 @@ type MapController struct {
 }
 
 func (c *MapController) Index(r *requests.Request) (int, interface{}) {
-	retVal := make(map[string]int)
-	retVal["foo"] = 1
-	retVal["bar"] = 2
+	retVal := &struct{
+		Bar int `json:"bar"`
+		Foo int `json:"foo"`
+	}{2, 1}
 	return 200, retVal
 }
 
@@ -93,6 +94,6 @@ func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhe
 	handler(resp, req)
 	body, err := ioutil.ReadAll(resp.Body)
 	c.Assert(err, IsNil)
-	c.Assert(string(body), Equals, "map[bar:2 foo:1]")
-	c.Assert(resp.Header().Get("Content-Type"), Equals, "text/html")
+	c.Assert(string(body), Equals, "&{2 1}")
+	c.Assert(resp.Header().Get("Content-Type"), Equals, "text/plain; charset=utf-8")
 }

@@ -30,6 +30,10 @@ func Register(c Controller) {
 	controllers[NameOf(c)] = c
 }
 
+func Clear() {
+	controllers = make(map[string]Controller)
+}
+
 func Get(name string) (Controller, error) {
 	controller, ok := controllers[name]
 	if !ok {

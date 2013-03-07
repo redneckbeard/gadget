@@ -138,6 +138,10 @@ func (route *Route) Respond(r *requests.Request) (status int, body interface{}, 
 		return 404, "", ""
 	}
 	r.UrlParams = route.GetParams(r.Path)
+	status, body = route.controller.RunFilters(r, action)
+	if status != 0 {
+		return
+	}
 	t := reflect.TypeOf(route.controller)
 	methodName := strings.Title(action)
 	method, _ := t.MethodByName(methodName)
