@@ -12,9 +12,13 @@ func Test(t *testing.T) { TestingT(t) }
 
 type RouteSuite struct{}
 
-func (s *RouteSuite) SetUpSuite(c *C) {
+func (s *RouteSuite) SetUpTest(c *C) {
 	controller.Register(&URLParamController{controller.New()})
 	controller.Register(&TellMethodNameController{controller.New()})
+}
+
+func (s *RouteSuite) TearDownTest(c *C) {
+	controller.Clear()
 }
 
 var _ = Suite(&RouteSuite{})
@@ -194,4 +198,44 @@ func (s *RouteSuite) TestRouterespondShouldNotPassUrlparamsToIndexpatternControl
 		c.Assert(status, Equals, 200)
 		c.Assert(body.(string), Equals, "")
 	}
+}
+
+func AclFilter(r *requests.Request) (status int, body interface{}) {
+	if r.UrlParams["urlparam_id"] == "10" {
+		status, body = 403, "VERBOTEN"
+	}
+	return
+}
+
+func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
+	ctrl, _ := controller.Get("urlparam")
+	ctrl.Filter([]string{"update"}, AclFilter)
+	r := newRoute("urlparam")
+	r.buildPatterns("")
+	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/urlparam/10", nil)
+	status, body, _ := r.Respond(requests.New(req))
+	c.Assert(status, Equals, 403)
+	c.Assert(body.(string), Equals, "VERBOTEN")
+}
+
+func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
+	ctrl, _ := controller.Get("urlparam")
+	ctrl.Filter([]string{"update"}, AclFilter)
+	r := newRoute("urlparam")
+	r.buildPatterns("")
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/urlparam/10", nil)
+	status, body, _ := r.Respond(requests.New(req))
+	c.Assert(status, Equals, 200)
+	c.Assert(body.(string), Equals, "10")
+}
+
+func (s *RouteSuite) TestRespondContinuesAfterNilFilterReturn(c *C) {
+	ctrl, _ := controller.Get("urlparam")
+	ctrl.Filter([]string{"update"}, AclFilter)
+	r := newRoute("urlparam")
+	r.buildPatterns("")
+	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/urlparam/11", nil)
+	status, body, _ := r.Respond(requests.New(req))
+	c.Assert(status, Equals, 200)
+	c.Assert(body.(string), Equals, "11")
 }

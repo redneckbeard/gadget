@@ -21,6 +21,8 @@ type Controller interface {
 	Create(r *requests.Request) (int, interface{})
 	Update(r *requests.Request) (int, interface{})
 	Destroy(r *requests.Request) (int, interface{})
+	Filter(verbs []string, filter Filter)
+	RunFilters(r *requests.Request, action string) (int, interface{})
 }
 
 func New() *DefaultController {
@@ -64,4 +66,14 @@ func (c *DefaultController) Filter(verbs []string, filter Filter) {
 		}
 		c.filters[verb] = append(filters, filter)
 	}
+}
+
+func (c *DefaultController) RunFilters(r *requests.Request, action string) (status int, body interface{}) {
+	for _, f := range c.filters[action] {
+		status, body = f(r)
+		if status == 0 {
+			return
+		}
+	}
+	return
 }
