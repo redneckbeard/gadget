@@ -216,8 +216,7 @@ Wish list
 
 Here are a few features that are clearly necessary but I have yet to implement:
 
-* Ability to override numeric ids in URLs with whatever regexp you want
-* A Response type for altering headers, setting cookies, etc.
+* Methods on requests.Request for altering response headers, setting cookies, etc.
 * Django-style middleware
 
 Thanks for watching
