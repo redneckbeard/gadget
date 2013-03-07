@@ -112,10 +112,20 @@ type, minus "controller". But you probably won't ever do so directly, because
 the `routing` package does it for you.
 
 The Gadget router will hit controller methods based on the HTTP verbs that you
-would expect: GET routes to `Index` and `Show`, POST to `Create`, PUT to
-`Update`, and DELETE to `Destroy`. The exception is arbitrary additional
-resources. `ChiefQuimby` above would be called for any verb when the requested
+would expect: 
+
+* `GET /controller` routes to `Index`
+* `GET /controller/\d+` routes to `Show`
+* `POST /controller` routes `Create`
+* `PUT /controller/\d+` routes to `Update`
+* `DELETE /controller/\d+` routes to `Destroy`
+
+In addition, any exported method on the controller will be routed to for all
+HTTP verbs. `ChiefQuimby` above would be called for any verb when the requested
 path was `/mission/chiefquimby`.
+
+Numeric ids are the default, but if you want something else in your URLs, just
+override `func IdPattern() string` on your controller.
 
 ### Action filters
 

@@ -21,6 +21,8 @@ type Controller interface {
 	Create(r *requests.Request) (int, interface{})
 	Update(r *requests.Request) (int, interface{})
 	Destroy(r *requests.Request) (int, interface{})
+
+	IdPattern() string
 	Filter(verbs []string, filter Filter)
 	RunFilters(r *requests.Request, action string) (int, interface{})
 }
@@ -38,24 +40,14 @@ type DefaultController struct {
 }
 
 // Default handlers for anything just 404. Users are responsible for overriding any embedded methods they want to respond otherwise.
-func (c *DefaultController) Index(r *requests.Request) (int, interface{}) {
-	return 404, ""
-}
+func (c *DefaultController) Index(r *requests.Request) (int, interface{})   { return 404, "" }
+func (c *DefaultController) Show(r *requests.Request) (int, interface{})    { return 404, "" }
+func (c *DefaultController) Create(r *requests.Request) (int, interface{})  { return 404, "" }
+func (c *DefaultController) Update(r *requests.Request) (int, interface{})  { return 404, "" }
+func (c *DefaultController) Destroy(r *requests.Request) (int, interface{}) { return 404, "" }
 
-func (c *DefaultController) Show(r *requests.Request) (int, interface{}) {
-	return 404, ""
-}
-
-func (c *DefaultController) Create(r *requests.Request) (int, interface{}) {
-	return 404, ""
-}
-
-func (c *DefaultController) Update(r *requests.Request) (int, interface{}) {
-	return 404, ""
-}
-
-func (c *DefaultController) Destroy(r *requests.Request) (int, interface{}) {
-	return 404, ""
+func (c *DefaultController) IdPattern() string {
+	return `\d+`
 }
 
 func (c *DefaultController) Filter(verbs []string, filter Filter) {

@@ -46,11 +46,10 @@ func (route *Route) buildPatterns(prefix string) {
 	// Don't bother generating fancy regexps if we're looking at '/'
 	if route.segment == "" {
 		route.indexPattern = regexp.MustCompile(`^$`)
-		route.objectPattern = regexp.MustCompile(`^$`)
 	} else {
 		basePattern := prefix + route.segment
 		route.indexPattern = regexp.MustCompile("^" + basePattern + "$")
-		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>\d+))?$`, basePattern, route.segment)
+		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, route.segment, route.controller.IdPattern())
 		route.objectPattern = regexp.MustCompile(patternWithId)
 		actions := arbitraryActions(route.controller)
 		if len(actions) > 0 {
@@ -60,7 +59,7 @@ func (route *Route) buildPatterns(prefix string) {
 	}
 	// Calls to Prefixed generate routes without controllers, and the value of prefix is already all set for those
 	if route.controller != nil {
-		prefix += fmt.Sprintf(`%s/(?P<%s_id>\d+)/`, route.segment, route.segment)
+		prefix += fmt.Sprintf(`%s/(?P<%s_id>%s)/`, route.segment, route.segment, route.controller.IdPattern())
 	} else {
 		prefix += "/"
 	}
@@ -92,21 +91,29 @@ func newRoute(segment string) *Route {
 	return route
 }
 
-func (route *Route) Match(r *requests.Request) bool {
-	if route.objectPattern.MatchString(r.Path) {
-		return true
+func (route *Route) Match(r *requests.Request) *regexp.Regexp {
+	switch {
+	case route.objectPattern != nil && route.objectPattern.MatchString(r.Path):
+		return route.objectPattern
+	case route.actionPattern != nil && route.actionPattern.MatchString(r.Path):
+		return route.actionPattern
+	case route.indexPattern.MatchString(r.Path):
+		return route.indexPattern
 	}
-	return false
+	return nil
 }
 
-func (route *Route) GetParams(path string) map[string]string {
+func (route *Route) GetParams(r *requests.Request) map[string]string {
 	params := make(map[string]string)
-	names := route.objectPattern.SubexpNames()
-	matches := route.objectPattern.FindStringSubmatch(path)
-	for i := 1; i < len(matches); i++ {
-		m, n := matches[i], names[i]
-		if m != "" {
-			params[n] = m
+	pattern := route.Match(r)
+	if pattern.NumSubexp() > 0 {
+		names := pattern.SubexpNames()
+		matches := pattern.FindStringSubmatch(r.Path)
+		for i := 1; i < len(matches); i++ {
+			m, n := matches[i], names[i]
+			if m != "" {
+				params[n] = m
+			}
 		}
 	}
 	return params
@@ -137,7 +144,7 @@ func (route *Route) Respond(r *requests.Request) (status int, body interface{}, 
 	if action == "" {
 		return 404, "", ""
 	}
-	r.UrlParams = route.GetParams(r.Path)
+	r.UrlParams = route.GetParams(r)
 	status, body = route.controller.RunFilters(r, action)
 	if status != 0 {
 		return
