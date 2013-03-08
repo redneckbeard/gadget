@@ -7,7 +7,10 @@ import (
 )
 
 func Go(port string) {
-	env.Configure()
+	err := env.Configure()
+	if err != nil {
+		panic(err)
+	}
 	env.ServeStatic()
 	http.HandleFunc("/", routing.Handler())
 	http.ListenAndServe(":"+port, nil)

@@ -1,6 +1,11 @@
 package requests
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+	"github.com/redneckbeard/gadget/env"
+	"time"
+)
 
 type Request struct {
 	*http.Request
@@ -19,4 +24,9 @@ func (r *Request) ContentType() string {
 		return accept
 	}
 	return r.Request.Header.Get("Content-Type")
+}
+
+func (r *Request) Log(status, contentLength int) {
+	raw := r.Request
+	env.Log(fmt.Sprintf(`[%s] "%s %s %s" %d %d`, time.Now().Format(time.RFC822), r.Method, raw.URL.Path, raw.Proto, status, contentLength))
 }
