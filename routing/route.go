@@ -18,12 +18,13 @@ type Route struct {
 	subroutes     []*Route
 }
 
-func arbitraryActions(controller controller.Controller) (actions []string) {
+func arbitraryActions(ctlr controller.Controller) (actions []string) {
 	defaultActions := []string{"Index", "Show", "Create", "Update", "Destroy"}
-	t := reflect.TypeOf(controller)
+	t := reflect.TypeOf(ctlr)
+	v := reflect.ValueOf(ctlr)
 	for i := 0; i < t.NumMethod(); i++ {
 		method := t.Method(i)
-		if method.PkgPath == "" {
+		if method.PkgPath == "" && controller.IsAction(v.Method(i)) {
 			isDefault := false
 			for _, da := range defaultActions {
 				if method.Name == da {

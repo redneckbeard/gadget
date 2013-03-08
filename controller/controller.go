@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/redneckbeard/gadget/requests"
+	"reflect"
 )
 
 const (
@@ -68,4 +69,9 @@ func (c *DefaultController) RunFilters(r *requests.Request, action string) (stat
 		}
 	}
 	return
+}
+
+func IsAction(method reflect.Value) bool {
+	indexMethod := reflect.ValueOf(&DefaultController{}).MethodByName("Index")
+	return indexMethod.Type() == method.Type()
 }
