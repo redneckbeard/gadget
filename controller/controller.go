@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/redneckbeard/gadget/requests"
 	"reflect"
+	"strings"
 )
 
 const (
@@ -14,7 +15,33 @@ const (
 	DESTROY = "destroy"
 )
 
-var VALID_METHOD_NAMES = []string{INDEX, SHOW, CREATE, UPDATE, DESTROY}
+var defaultActions = []string{INDEX, SHOW, CREATE, UPDATE, DESTROY}
+
+func arbitraryActions(ctlr Controller) (actions []string) {
+	t := reflect.TypeOf(ctlr)
+	v := reflect.ValueOf(ctlr)
+	for i := 0; i < t.NumMethod(); i++ {
+		method := t.Method(i)
+		if method.PkgPath == "" && isAction(v.Method(i)) {
+			isDefault := false
+			name := strings.ToLower(method.Name)
+			for _, da := range defaultActions {
+				if method.Name == da {
+					isDefault = true
+				}
+			}
+			if !isDefault {
+				actions = append(actions, name)
+			}
+		}
+	}
+	return
+}
+
+func isAction(method reflect.Value) bool {
+	indexMethod := reflect.ValueOf(&DefaultController{}).MethodByName("Index")
+	return indexMethod.Type() == method.Type()
+}
 
 type Controller interface {
 	Index(r *requests.Request) (int, interface{})
@@ -24,20 +51,19 @@ type Controller interface {
 	Destroy(r *requests.Request) (int, interface{})
 
 	IdPattern() string
+	ExtraActions() []string
+	setActions([]string)
 	Filter(verbs []string, filter Filter)
 	RunFilters(r *requests.Request, action string) (int, interface{})
 }
 
 func New() *DefaultController {
-	filters := make(map[string][]Filter)
-	for _, m := range VALID_METHOD_NAMES {
-		filters[m] = []Filter{}
-	}
-	return &DefaultController{filters}
+	return &DefaultController{}
 }
 
 type DefaultController struct {
-	filters map[string][]Filter
+	filters      map[string][]Filter
+	extraActions []string
 }
 
 // Default handlers for anything just 404. Users are responsible for overriding any embedded methods they want to respond otherwise.
@@ -53,11 +79,11 @@ func (c *DefaultController) IdPattern() string {
 
 func (c *DefaultController) Filter(verbs []string, filter Filter) {
 	for _, verb := range verbs {
-		filters := c.filters[verb]
-		if filters == nil {
-			panic(fmt.Sprintf("Cannot register beforeFilter for verb '%s'", verb))
+		if filters, ok := c.filters[verb]; !ok {
+			panic(fmt.Sprintf("Unable to add filter for '%s' -- no such action", verb))
+		} else {
+			c.filters[verb] = append(filters, filter)
 		}
-		c.filters[verb] = append(filters, filter)
 	}
 }
 
@@ -71,7 +97,16 @@ func (c *DefaultController) RunFilters(r *requests.Request, action string) (stat
 	return
 }
 
-func IsAction(method reflect.Value) bool {
-	indexMethod := reflect.ValueOf(&DefaultController{}).MethodByName("Index")
-	return indexMethod.Type() == method.Type()
+func (c *DefaultController) ExtraActions() []string {
+	return c.extraActions
+}
+
+func (c *DefaultController) setActions(actions []string) {
+	c.extraActions = actions
+	actions = append(actions, defaultActions...)
+	filters := make(map[string][]Filter)
+	for _, action := range actions {
+		filters[action] = []Filter{}
+	}
+	c.filters = filters
 }

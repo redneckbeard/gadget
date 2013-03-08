@@ -18,26 +18,6 @@ type Route struct {
 	subroutes     []*Route
 }
 
-func arbitraryActions(ctlr controller.Controller) (actions []string) {
-	defaultActions := []string{"Index", "Show", "Create", "Update", "Destroy"}
-	t := reflect.TypeOf(ctlr)
-	v := reflect.ValueOf(ctlr)
-	for i := 0; i < t.NumMethod(); i++ {
-		method := t.Method(i)
-		if method.PkgPath == "" && controller.IsAction(v.Method(i)) {
-			isDefault := false
-			for _, da := range defaultActions {
-				if method.Name == da {
-					isDefault = true
-				}
-			}
-			if !isDefault {
-				actions = append(actions, strings.ToLower(method.Name))
-			}
-		}
-	}
-	return
-}
 
 func (route *Route) String() string {
 	return fmt.Sprintf(route.objectPattern.String())
@@ -52,7 +32,7 @@ func (route *Route) buildPatterns(prefix string) {
 		route.indexPattern = regexp.MustCompile("^" + basePattern + "$")
 		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, route.segment, route.controller.IdPattern())
 		route.objectPattern = regexp.MustCompile(patternWithId)
-		actions := arbitraryActions(route.controller)
+		actions := route.controller.ExtraActions()
 		if len(actions) > 0 {
 			actionPatternString := fmt.Sprintf(`^%s/(?:%s)$`, basePattern, strings.Join(actions, "|"))
 			route.actionPattern = regexp.MustCompile(actionPatternString)

@@ -21,12 +21,13 @@ func NameOf(c Controller) string {
 	name := reflect.TypeOf(c).Elem().Name()
 	matches := controllerName.FindStringSubmatch(name)
 	if matches == nil || len(matches) != 2 {
-		panic("Controller names must adhere to the convention of '<name>Controller'")
+		panic(`Controller names must adhere to the convention of '<name>Controller'`)
 	}
 	return strings.ToLower(matches[1])
 }
 
 func Register(c Controller) {
+	c.setActions(arbitraryActions(c))
 	controllers[NameOf(c)] = c
 }
 
