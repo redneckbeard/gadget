@@ -50,8 +50,9 @@ import (
 )
 
 func main() {
-	gadget.Resource("mission",
-		gadget.Resource("character")))
+	gadget.Routes(
+		gadget.Resource("mission",
+			gadget.Resource("character")))
 
 	gadget.Go("8090")
 }
@@ -69,7 +70,7 @@ Gadget favors convention over configuration (sometimes), and the strings that ar
 package controllers
 
 import (
-	"github.com/redneckbeard/gadget
+	"github.com/redneckbeard/gadget"
 )
 
 type MissionController struct {
@@ -213,7 +214,7 @@ Wish list
 
 Here are a few features that are clearly necessary but I have yet to implement:
 
-* Methods on requests.Request for altering response headers, setting cookies, etc.
+* Methods on gadget.Request for altering response headers, setting cookies, etc.
 * Django-style middleware
 
 Thanks for watching
