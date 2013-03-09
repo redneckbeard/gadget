@@ -39,25 +39,38 @@ func Prefixed(prefix string, nested ...*Route) *Route {
 
 func Handler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var (
+			status int
+			final string
+		)
 		req := requests.New(r)
+		matched := false
 		for _, route := range routes {
 			if route.Match(req) != nil {
-				status, body, action := route.Respond(req)
+				var (
+					action string
+					body interface{}
+				)
+				matched = true
+				status, body, action = route.Respond(req)
 				if status == 301 || status == 302 {
-					http.Redirect(w, r, body.(string), status)
+					final = body.(string)
+					http.Redirect(w, r, final, status)
 				} else {
+					var mime string
 					contentType := req.ContentType()
-
-					status, body, matched, _ := processor.Process(status, body, contentType, &processor.RouteData{Action: action, ControllerName: controller.NameOf(route.controller), Verb: r.Method})
-					// Assume that if we haven't munged the body interface{} value, we are defaulting to HTML
-					w.Header().Set("Content-Type", matched)
-					w.WriteHeader(status)
-					fmt.Fprint(w, body)
+					status, final, mime, _ = processor.Process(status, body, contentType, &processor.RouteData{Action: action, ControllerName: controller.NameOf(route.controller), Verb: r.Method})
+					w.Header().Set("Content-Type", mime)
 				}
-				return
+				break
 			}
 		}
-		w.WriteHeader(404)
-		fmt.Fprint(w, "")
+		if !matched {
+			status = 404
+			final = ""
+		}
+		w.WriteHeader(status)
+		fmt.Fprint(w, final)
+		req.Log(status, len(final))
 	}
 }
