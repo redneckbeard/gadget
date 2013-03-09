@@ -1,6 +1,8 @@
 Gadget is a web framework for Go
 ================================
 
+[![Build Status](https://secure.travis-ci.org/redneckbeard/gadget.png?branch=master)](http://travis-ci.org/redneckbeard/gadget)
+
 tl;dr I'm a terrible maintainer of open source software, and I would advise
 against using this framework.
 
