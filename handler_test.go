@@ -1,4 +1,4 @@
-package routing
+package gadget
 
 import (
 	"crypto/md5"

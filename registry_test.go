@@ -1,4 +1,4 @@
-package routing
+package gadget
 
 import (
 	"github.com/redneckbeard/gadget/controller"
