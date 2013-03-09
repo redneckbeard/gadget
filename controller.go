@@ -1,9 +1,10 @@
-package controller
+package gadget
 
 import (
+	"errors"
 	"fmt"
-	"github.com/redneckbeard/gadget/requests"
 	"reflect"
+	"regexp"
 	"strings"
 )
 
@@ -15,7 +16,41 @@ const (
 	DESTROY = "destroy"
 )
 
-var defaultActions = []string{INDEX, SHOW, CREATE, UPDATE, DESTROY}
+var (
+	controllers    = make(map[string]Controller)
+	controllerName *regexp.Regexp
+	defaultActions = []string{INDEX, SHOW, CREATE, UPDATE, DESTROY}
+)
+
+func init() {
+	controllerName = regexp.MustCompile(`(\w+)Controller`)
+}
+
+func NameOf(c Controller) string {
+	name := reflect.TypeOf(c).Elem().Name()
+	matches := controllerName.FindStringSubmatch(name)
+	if matches == nil || len(matches) != 2 {
+		panic(`Controller names must adhere to the convention of '<name>Controller'`)
+	}
+	return strings.ToLower(matches[1])
+}
+
+func Register(c Controller) {
+	c.setActions(arbitraryActions(c))
+	controllers[NameOf(c)] = c
+}
+
+func Clear() {
+	controllers = make(map[string]Controller)
+}
+
+func Get(name string) (Controller, error) {
+	controller, ok := controllers[name]
+	if !ok {
+		return nil, errors.New(fmt.Sprintf("No controller with label '%s' found", name))
+	}
+	return controller, nil
+}
 
 func arbitraryActions(ctlr Controller) (actions []string) {
 	t := reflect.TypeOf(ctlr)
@@ -44,17 +79,17 @@ func isAction(method reflect.Value) bool {
 }
 
 type Controller interface {
-	Index(r *requests.Request) (int, interface{})
-	Show(r *requests.Request) (int, interface{})
-	Create(r *requests.Request) (int, interface{})
-	Update(r *requests.Request) (int, interface{})
-	Destroy(r *requests.Request) (int, interface{})
+	Index(r *Request) (int, interface{})
+	Show(r *Request) (int, interface{})
+	Create(r *Request) (int, interface{})
+	Update(r *Request) (int, interface{})
+	Destroy(r *Request) (int, interface{})
 
 	IdPattern() string
 	ExtraActions() []string
 	setActions([]string)
 	Filter(verbs []string, filter Filter)
-	RunFilters(r *requests.Request, action string) (int, interface{})
+	RunFilters(r *Request, action string) (int, interface{})
 }
 
 func New() *DefaultController {
@@ -67,11 +102,11 @@ type DefaultController struct {
 }
 
 // Default handlers for anything just 404. Users are responsible for overriding any embedded methods they want to respond otherwise.
-func (c *DefaultController) Index(r *requests.Request) (int, interface{})   { return 404, "" }
-func (c *DefaultController) Show(r *requests.Request) (int, interface{})    { return 404, "" }
-func (c *DefaultController) Create(r *requests.Request) (int, interface{})  { return 404, "" }
-func (c *DefaultController) Update(r *requests.Request) (int, interface{})  { return 404, "" }
-func (c *DefaultController) Destroy(r *requests.Request) (int, interface{}) { return 404, "" }
+func (c *DefaultController) Index(r *Request) (int, interface{})   { return 404, "" }
+func (c *DefaultController) Show(r *Request) (int, interface{})    { return 404, "" }
+func (c *DefaultController) Create(r *Request) (int, interface{})  { return 404, "" }
+func (c *DefaultController) Update(r *Request) (int, interface{})  { return 404, "" }
+func (c *DefaultController) Destroy(r *Request) (int, interface{}) { return 404, "" }
 
 func (c *DefaultController) IdPattern() string {
 	return `\d+`
@@ -87,7 +122,9 @@ func (c *DefaultController) Filter(verbs []string, filter Filter) {
 	}
 }
 
-func (c *DefaultController) RunFilters(r *requests.Request, action string) (status int, body interface{}) {
+type Filter func(*Request) (int, interface{})
+
+func (c *DefaultController) RunFilters(r *Request, action string) (status int, body interface{}) {
 	for _, f := range c.filters[action] {
 		status, body = f(r)
 		if status == 0 {

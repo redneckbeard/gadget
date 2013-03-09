@@ -2,8 +2,6 @@ package gadget
 
 import (
 	"fmt"
-	"github.com/redneckbeard/gadget/controller"
-	"github.com/redneckbeard/gadget/requests"
 	"reflect"
 	"regexp"
 	"strings"
@@ -14,7 +12,7 @@ type Route struct {
 	indexPattern  *regexp.Regexp
 	objectPattern *regexp.Regexp
 	actionPattern *regexp.Regexp
-	controller    controller.Controller
+	controller    Controller
 	subroutes     []*Route
 }
 
@@ -64,7 +62,7 @@ func newRoute(segment string) *Route {
 	if segment == "" {
 		return &Route{segment: segment}
 	}
-	controller, err := controller.Get(segment)
+	controller, err := Get(segment)
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +70,7 @@ func newRoute(segment string) *Route {
 	return route
 }
 
-func (route *Route) Match(r *requests.Request) *regexp.Regexp {
+func (route *Route) Match(r *Request) *regexp.Regexp {
 	switch {
 	case route.objectPattern != nil && route.objectPattern.MatchString(r.Path):
 		return route.objectPattern
@@ -84,7 +82,7 @@ func (route *Route) Match(r *requests.Request) *regexp.Regexp {
 	return nil
 }
 
-func (route *Route) GetParams(r *requests.Request) map[string]string {
+func (route *Route) GetParams(r *Request) map[string]string {
 	params := make(map[string]string)
 	pattern := route.Match(r)
 	if pattern.NumSubexp() > 0 {
@@ -100,7 +98,7 @@ func (route *Route) GetParams(r *requests.Request) map[string]string {
 	return params
 }
 
-func (route *Route) GetActionName(r *requests.Request) (action string) {
+func (route *Route) GetActionName(r *Request) (action string) {
 	atIndex := route.indexPattern.MatchString(r.Path)
 	switch {
 	case route.actionPattern != nil && route.actionPattern.MatchString(r.Path):
@@ -120,7 +118,7 @@ func (route *Route) GetActionName(r *requests.Request) (action string) {
 	return
 }
 
-func (route *Route) Respond(r *requests.Request) (status int, body interface{}, action string) {
+func (route *Route) Respond(r *Request) (status int, body interface{}, action string) {
 	action = route.GetActionName(r)
 	if action == "" {
 		return 404, "", ""

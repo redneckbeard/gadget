@@ -2,9 +2,7 @@ package gadget
 
 import (
 	"fmt"
-	"github.com/redneckbeard/gadget/controller"
 	"github.com/redneckbeard/gadget/processor"
-	"github.com/redneckbeard/gadget/requests"
 	"net/http"
 )
 
@@ -43,7 +41,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 			status int
 			final string
 		)
-		req := requests.New(r)
+		req := NewRequest(r)
 		matched := false
 		for _, route := range routes {
 			if route.Match(req) != nil {
@@ -59,7 +57,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 				} else {
 					var mime string
 					contentType := req.ContentType()
-					status, final, mime, _ = processor.Process(status, body, contentType, &processor.RouteData{Action: action, ControllerName: controller.NameOf(route.controller), Verb: r.Method})
+					status, final, mime, _ = processor.Process(status, body, contentType, &processor.RouteData{Action: action, ControllerName: NameOf(route.controller), Verb: r.Method})
 					w.Header().Set("Content-Type", mime)
 				}
 				break

@@ -3,9 +3,7 @@ package gadget
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/redneckbeard/gadget/controller"
 	"github.com/redneckbeard/gadget/processor"
-	"github.com/redneckbeard/gadget/requests"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"net/http"
@@ -16,34 +14,34 @@ import (
 type HandlerSuite struct{}
 
 func (s *HandlerSuite) SetUpSuite(c *C) {
-	controller.Register(&MapController{controller.New()})
-	controller.Register(&ResourceController{controller.New()})
-	controller.Register(&UuidController{controller.New()})
+	Register(&MapController{New()})
+	Register(&ResourceController{New()})
+	Register(&UuidController{New()})
 	processor.Define("application/json", processor.JsonProcessor)
 	Routes(SetIndex("map"), Resource("resource"), Resource("uuid"))
 }
 
 var _ = Suite(&HandlerSuite{})
 
-type ResourceController struct{ *controller.DefaultController }
+type ResourceController struct{ *DefaultController }
 
-func (c *ResourceController) Index(r *requests.Request) (int, interface{}) { return 200, "" }
-func (c *ResourceController) Show(r *requests.Request) (int, interface{})  { return 200, "" }
-func (c *ResourceController) Extra(r *requests.Request) (int, interface{}) { return 200, "" }
+func (c *ResourceController) Index(r *Request) (int, interface{}) { return 200, "" }
+func (c *ResourceController) Show(r *Request) (int, interface{})  { return 200, "" }
+func (c *ResourceController) Extra(r *Request) (int, interface{}) { return 200, "" }
 
-type UuidController struct{ *controller.DefaultController }
+type UuidController struct{ *DefaultController }
 
 func (c *UuidController) IdPattern() string { return `\w{8}-\w{4}-\w{4}-\w{4}-\w{12}` }
 
-func (c *UuidController) Index(r *requests.Request) (int, interface{}) { return 200, "" }
-func (c *UuidController) Show(r *requests.Request) (int, interface{})  { return 200, "" }
-func (c *UuidController) Extra(r *requests.Request) (int, interface{}) { return 200, "" }
+func (c *UuidController) Index(r *Request) (int, interface{}) { return 200, "" }
+func (c *UuidController) Show(r *Request) (int, interface{})  { return 200, "" }
+func (c *UuidController) Extra(r *Request) (int, interface{}) { return 200, "" }
 
 type MapController struct {
-	*controller.DefaultController
+	*DefaultController
 }
 
-func (c *MapController) Index(r *requests.Request) (int, interface{}) {
+func (c *MapController) Index(r *Request) (int, interface{}) {
 	retVal := &struct {
 		Bar int `json:"bar"`
 		Foo int `json:"foo"`

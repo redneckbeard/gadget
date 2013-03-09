@@ -46,14 +46,12 @@ package main
 
 import (
 	"github.com/redneckbeard/gadget"
-	"github.com/redneckbeard/gadget/routing"
 	_ "inspector/controllers"
 )
 
 func main() {
-	routing.Routes(
-		routing.Resource("mission",
-			routing.Resource("character")))
+	gadget.Resource("mission",
+		gadget.Resource("character")))
 
 	gadget.Go("8090")
 }
@@ -65,36 +63,35 @@ What's happening here?
 * We configured routes to RESTful controllers and made them nested. We'll now have URLs like `/missions/3/characters/7`.
 * We configured the server to run on port 8090 with the `Go` function.
 
-Gadget favors convention over configuration (sometimes), and the strings that are fed to the `routing.Resource` calls correspond to the names of controllers that we defined in our `controllers` package. The files in the controller package all declare a controller type, embed a default controller to make it simpler to implement the controller interface, and explicitly register that controller with the framework. Observe:
+Gadget favors convention over configuration (sometimes), and the strings that are fed to the `gadget.Resource` calls correspond to the names of controllers that we defined in our `controllers` package. The files in the controller package all declare a controller type, embed a default controller to make it simpler to implement the controller interface, and explicitly register that controller with the framework. Observe:
 
 ```Go
 package controllers
 
 import (
-	"github.com/redneckbeard/gadget/controller"
-	"github.com/redneckbeard/gadget/requests"
+	"github.com/redneckbeard/gadget
 )
 
 type MissionController struct {
-	*controller.DefaultController
+	*gadget.DefaultController
 }
 
-func (c *MissionController) Index(r *requests.Request) (int, interface{}) {
+func (c *MissionController) Index(r *gadget.Request) (int, interface{}) {
 	return 200, []&struct{Mission string}{{"Dr. Claw"},{"M.A.D. Cat"}}
 }
 
-func (c *MissionController) Show(r *requests.Request) (int, interface{}) {
+func (c *MissionController) Show(r *gadget.Request) (int, interface{}) {
 	missionId := r.UrlParams["mission_id"]
 	return 200, "Mission #" + missionId + ": this message will self-destruct."
 }
 
-func (c *MissionController) ChiefQuimby(r *requests.Request) (int, interface{}) {
+func (c *MissionController) ChiefQuimby(r *gadget.Request) (int, interface{}) {
 	return 200, "You've done it again, Gadget! Don't know how you do it!"
 }
 
 func init() {
-        c := &MissionController{controller.New()}
-	controller.Register(c)
+        c := &MissionController{gadget.New()}
+	gadget.Register(c)
 }
 ```
 
@@ -137,9 +134,9 @@ the example above might look like this:
 
 ```Go
 func init() {
-	c := &MissionController{controller.New()}
+	c := &MissionController{gadget.New()}
 	c.Filter([]string{"create", "update", "destroy"}, UserIsPenny)
-	controller.Register(c)
+	gadget.Register(c)
 }
 ```
 

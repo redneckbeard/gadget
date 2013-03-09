@@ -1,12 +1,8 @@
-package controller
+package gadget
 
 import (
 	. "launchpad.net/gocheck"
-	"testing"
-	"github.com/redneckbeard/gadget/requests"
 )
-
-func Test(t *testing.T) { TestingT(t) }
 
 type ControllerSuite struct{}
 
@@ -53,7 +49,7 @@ func (s *ControllerSuite) TestGetotherShouldReturnErrorNoSuchControllerIsRegiste
 	c.Assert(err, ErrorMatches, "No controller with label 'other' found")
 }
 
-func F(r *requests.Request) (int, interface{}) {
+func F(r *Request) (int, interface{}) {
 		return 200, "OK"
 	}
 

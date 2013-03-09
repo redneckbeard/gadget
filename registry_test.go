@@ -1,30 +1,29 @@
 package gadget
 
 import (
-	"github.com/redneckbeard/gadget/controller"
 	. "launchpad.net/gocheck"
 )
 
 type RegistrySuite struct{}
 
 func (s *RegistrySuite) SetUpSuite(c *C) {
-	controller.Register(&FooController{controller.New()})
-	controller.Register(&BarController{controller.New()})
-	controller.Register(&BazController{controller.New()})
+	Register(&FooController{New()})
+	Register(&BarController{New()})
+	Register(&BazController{New()})
 }
 
 var _ = Suite(&RegistrySuite{})
 
 type FooController struct {
-	*controller.DefaultController
+	*DefaultController
 }
 
 type BarController struct {
-	*controller.DefaultController
+	*DefaultController
 }
 
 type BazController struct {
-	*controller.DefaultController
+	*DefaultController
 }
 
 //SetIndex("foo") should return a Route with no subroutes and an indexPattern of ^$
