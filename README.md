@@ -62,11 +62,18 @@ func main() {
 
 What's happening here?
 
-* We imported some stuff, notably our controllers with the blank identifier to ensure that `init` functions run in that package.
-* We configured routes to RESTful controllers and made them nested. We'll now have URLs like `/missions/3/characters/7`.
+* We imported some stuff, notably our controllers with the blank identifier to
+  ensure that `init` functions run in that package.
+* We configured routes to RESTful controllers and made them nested. We'll now
+  have URLs like `/missions/3/characters/7`.
 * We configured the server to run on port 8090 with the `Go` function.
 
-Gadget favors convention over configuration (sometimes), and the strings that are fed to the `gadget.Resource` calls correspond to the names of controllers that we defined in our `controllers` package. The files in the controller package all declare a controller type, embed a default controller to make it simpler to implement the controller interface, and explicitly register that controller with the framework. Observe:
+Gadget favors convention over configuration (sometimes), and the strings that
+are fed to the `gadget.Resource` calls correspond to the names of controllers
+that we defined in our `controllers` package. The files in the controller
+package all declare a controller type, embed a default controller to make it
+simpler to implement the controller interface, and explicitly register that
+controller with the framework. Observe:
 
 ```Go
 package controllers
@@ -122,7 +129,7 @@ would expect:
 
 In addition, any exported method on the controller will be routed to for all
 HTTP verbs. `ChiefQuimby` above would be called for any verb when the requested
-path was `/mission/chiefquimby`.
+path was `/mission/chief-quimby`.
 
 Numeric ids are the default, but if you want something else in your URLs, just
 override `func IdPattern() string` on your controller.

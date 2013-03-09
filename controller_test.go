@@ -24,6 +24,12 @@ type BrokenName struct {
 	*DefaultController
 }
 
+//hyphenate should convert "PascalCase" into "pascal-case"
+func (s *ControllerSuite) TestHyphenateShouldConvertPascalcaseIntoPascalcase(c *C){
+	c.Assert(hyphenate("PascalCase"), Equals, "pascal-case")
+}
+
+
 //NameOf(&TestController) should return "test"
 func (s *ControllerSuite) TestNameoftestcontrollerShouldReturnTest(c *C) {
 	t := &TestController{New()}

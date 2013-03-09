@@ -30,7 +30,7 @@ func (route *Route) buildPatterns(prefix string) {
 		route.indexPattern = regexp.MustCompile("^" + basePattern + "$")
 		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, route.segment, route.controller.IdPattern())
 		route.objectPattern = regexp.MustCompile(patternWithId)
-		actions := route.controller.ExtraActions()
+		actions := route.controller.ExtraActionNames()
 		if len(actions) > 0 {
 			actionPatternString := fmt.Sprintf(`^%s/(?:%s)$`, basePattern, strings.Join(actions, "|"))
 			route.actionPattern = regexp.MustCompile(actionPatternString)
@@ -128,8 +128,13 @@ func (route *Route) Respond(r *Request) (status int, body interface{}, action st
 	if status != 0 {
 		return
 	}
+	var methodName string
+	if extra, ok := route.controller.ExtraActions()[action]; ok {
+		methodName = extra
+	} else {
+		methodName = strings.Title(action)
+	}
 	t := reflect.TypeOf(route.controller)
-	methodName := strings.Title(action)
 	method, _ := t.MethodByName(methodName)
 	arguments := []reflect.Value{reflect.ValueOf(route.controller), reflect.ValueOf(r)}
 	statusAndBody := method.Func.Call(arguments)

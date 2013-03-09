@@ -25,9 +25,10 @@ var _ = Suite(&HandlerSuite{})
 
 type ResourceController struct{ *DefaultController }
 
-func (c *ResourceController) Index(r *Request) (int, interface{}) { return 200, "" }
-func (c *ResourceController) Show(r *Request) (int, interface{})  { return 200, "" }
-func (c *ResourceController) Extra(r *Request) (int, interface{}) { return 200, "" }
+func (c *ResourceController) Index(r *Request) (int, interface{})      { return 200, "" }
+func (c *ResourceController) Show(r *Request) (int, interface{})       { return 200, "" }
+func (c *ResourceController) Extra(r *Request) (int, interface{})      { return 200, "" }
+func (c *ResourceController) PascalCase(r *Request) (int, interface{}) { return 200, "" }
 
 type UuidController struct{ *DefaultController }
 
@@ -123,6 +124,26 @@ func (s *HandlerSuite) TestRoute404sNoIdNoAction(c *C) {
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	c.Assert(resp.Code, Equals, 404)
+}
+
+//Route.Respond should 404 on a component that matches a default action name
+func (s *HandlerSuite) TestRouterespondShould404OnComponentThatMatchesDefaultActionName(c *C) {
+	handler := Handler()
+
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resource/index", nil)
+	resp := httptest.NewRecorder()
+	handler(resp, req)
+	c.Assert(resp.Code, Equals, 404)
+}
+
+//Hyphenated URL components should be correctly routed to Pascal-cased method names
+func (s *HandlerSuite) TestHyphenatedUrlComponentsCorrectlyRoutedToPascalcasedMethodNames(c *C) {
+	handler := Handler()
+
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resource/pascal-case", nil)
+	resp := httptest.NewRecorder()
+	handler(resp, req)
+	c.Assert(resp.Code, Equals, 200)
 }
 
 //Route.Respond should 404 on a component that matches an exported method but does not have an Action signature
