@@ -44,7 +44,7 @@ func (s *ControllerSuite) TestNameofbrokennameShouldPanic(c *C) {
 
 //Get("test") should return a *TestController if one is registered
 func (s *ControllerSuite) TestGettestShouldReturnTestcontrollerOneIsRegistered(c *C) {
-	ctlr, _ := Get("test")
+	ctlr, _ := Get("tests")
 	_, ok := ctlr.(*TestController)
 	c.Assert(ok, Equals, true)
 }
@@ -62,6 +62,6 @@ func F(r *Request) (int, interface{}) {
 
 //controller.Filter("missing", Filter) should panic if the controller has no method "missing"
 func (s *ControllerSuite) TestControllerfiltermissingFilterShouldPanicControllerHasNoMethodMissing(c *C) {
-	ctlr, _ := Get("test")
+	ctlr, _ := Get("tests")
 	c.Assert(func() { ctlr.Filter([]string{"missing"}, F) }, PanicMatches, "Unable to add filter for 'missing' -- no such action")
 }

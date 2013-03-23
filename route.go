@@ -28,7 +28,7 @@ func (route *Route) buildPatterns(prefix string) {
 	} else {
 		basePattern := prefix + route.segment
 		route.indexPattern = regexp.MustCompile("^" + basePattern + "$")
-		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, route.segment, route.controller.IdPattern())
+		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, NameOf(route.controller), route.controller.IdPattern())
 		route.objectPattern = regexp.MustCompile(patternWithId)
 		actions := route.controller.ExtraActionNames()
 		if len(actions) > 0 {
@@ -38,7 +38,7 @@ func (route *Route) buildPatterns(prefix string) {
 	}
 	// Calls to Prefixed generate routes without controllers, and the value of prefix is already all set for those
 	if route.controller != nil {
-		prefix += fmt.Sprintf(`%s/(?P<%s_id>%s)/`, route.segment, route.segment, route.controller.IdPattern())
+		prefix += fmt.Sprintf(`%s/(?P<%s_id>%s)/`, route.segment, NameOf(route.controller), route.controller.IdPattern())
 	} else {
 		prefix += "/"
 	}

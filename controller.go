@@ -42,6 +42,7 @@ type Controller interface {
 	setActions([][]string)
 	Filter(verbs []string, filter Filter)
 	RunFilters(r *Request, action string) (int, interface{})
+	Plural() string
 }
 
 func NameOf(c Controller) string {
@@ -53,9 +54,17 @@ func NameOf(c Controller) string {
 	return strings.ToLower(matches[1])
 }
 
+func PluralOf(c Controller) string {
+	pluralName := c.Plural()
+	if pluralName != "" {
+		return pluralName
+	}
+	return NameOf(c) + "s"
+}
+
 func Register(c Controller) {
 	c.setActions(arbitraryActions(c))
-	controllers[NameOf(c)] = c
+	controllers[PluralOf(c)] = c
 }
 
 func Clear() {

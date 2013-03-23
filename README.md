@@ -53,8 +53,8 @@ import (
 
 func main() {
 	gadget.Routes(
-		gadget.Resource("mission",
-			gadget.Resource("character")))
+		gadget.Resource("missions",
+			gadget.Resource("characters")))
 
 	gadget.Go("8090")
 }
@@ -121,18 +121,23 @@ the `routing` package does it for you.
 The Gadget router will hit controller methods based on the HTTP verbs that you
 would expect: 
 
-* `GET /controller` routes to `Index`
-* `GET /controller/\d+` routes to `Show`
-* `POST /controller` routes `Create`
-* `PUT /controller/\d+` routes to `Update`
-* `DELETE /controller/\d+` routes to `Destroy`
+* `GET /mission` routes to `Index`
+* `GET /mission/\d+` routes to `Show`
+* `POST /mission` routes `Create`
+* `PUT /mission/\d+` routes to `Update`
+* `DELETE /mission/\d+` routes to `Destroy`
 
 In addition, any exported method on the controller will be routed to for all
 HTTP verbs. `ChiefQuimby` above would be called for any verb when the requested
-path was `/mission/chief-quimby`.
+path was `/missions/chief-quimby`.
 
 Numeric ids are the default, but if you want something else in your URLs, just
 override `func IdPattern() string` on your controller.
+
+Gadget doesn't pretend to speak perfect English, so it takes the dumbest
+possible guess at pluralizing your controller's name and just tacks an "s" on
+the end. If inflecting is more complicated, define a `Plural() string` method
+on your controller.
 
 ### Action filters
 

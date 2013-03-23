@@ -23,9 +23,8 @@ func (c *DefaultController) Create(r *Request) (int, interface{})  { return 404,
 func (c *DefaultController) Update(r *Request) (int, interface{})  { return 404, "" }
 func (c *DefaultController) Destroy(r *Request) (int, interface{}) { return 404, "" }
 
-func (c *DefaultController) IdPattern() string {
-	return `\d+`
-}
+func (c *DefaultController) IdPattern() string { return `\d+` }
+func (c *DefaultController) Plural() string    { return "" }
 
 func (c *DefaultController) Filter(verbs []string, filter Filter) {
 	for _, verb := range verbs {

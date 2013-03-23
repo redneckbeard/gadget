@@ -18,7 +18,7 @@ func (s *HandlerSuite) SetUpSuite(c *C) {
 	Register(&ResourceController{New()})
 	Register(&UuidController{New()})
 	processor.Define("application/json", processor.JsonProcessor)
-	Routes(SetIndex("map"), Resource("resource"), Resource("uuid"))
+	Routes(SetIndex("maps"), Resource("resources"), Resource("uuids"))
 }
 
 var _ = Suite(&HandlerSuite{})
@@ -120,7 +120,7 @@ func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhe
 func (s *HandlerSuite) TestRoute404sNoIdNoAction(c *C) {
 	handler := Handler()
 
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resource/not-extra", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resources/not-extra", nil)
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	c.Assert(resp.Code, Equals, 404)
@@ -130,7 +130,7 @@ func (s *HandlerSuite) TestRoute404sNoIdNoAction(c *C) {
 func (s *HandlerSuite) TestRouterespondShould404OnComponentThatMatchesDefaultActionName(c *C) {
 	handler := Handler()
 
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resource/index", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resources/index", nil)
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	c.Assert(resp.Code, Equals, 404)
@@ -140,7 +140,7 @@ func (s *HandlerSuite) TestRouterespondShould404OnComponentThatMatchesDefaultAct
 func (s *HandlerSuite) TestHyphenatedUrlComponentsCorrectlyRoutedToPascalcasedMethodNames(c *C) {
 	handler := Handler()
 
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resource/pascal-case", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resources/pascal-case", nil)
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	c.Assert(resp.Code, Equals, 200)
@@ -150,7 +150,7 @@ func (s *HandlerSuite) TestHyphenatedUrlComponentsCorrectlyRoutedToPascalcasedMe
 func (s *HandlerSuite) TestRouterespondShould404OnComponentThatMatchesExportedMethodButDoesNotHaveActionSignature(c *C) {
 	handler := Handler()
 
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resource/idpattern", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resources/idpattern", nil)
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	c.Assert(resp.Code, Equals, 404)
@@ -165,7 +165,7 @@ func fakeUuid() string {
 func (s *HandlerSuite) TestCustomIdPattern200OnMatches(c *C) {
 	handler := Handler()
 
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/uuid/"+fakeUuid(), nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/uuids/"+fakeUuid(), nil)
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	c.Assert(resp.Code, Equals, 200)
@@ -174,7 +174,7 @@ func (s *HandlerSuite) TestCustomIdPattern200OnMatches(c *C) {
 func (s *HandlerSuite) TestCustomIdPattern404sOnNonMatches(c *C) {
 	handler := Handler()
 
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/uuid/"+fakeUuid()[1:], nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/uuids/"+fakeUuid()[1:], nil)
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	c.Assert(resp.Code, Equals, 404)
