@@ -57,7 +57,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 				} else {
 					var mime string
 					contentType := req.ContentType()
-					status, final, mime, _ = processor.Process(status, body, contentType, &processor.RouteData{Action: action, ControllerName: NameOf(route.controller), Verb: r.Method})
+					status, final, mime, _ = processor.Process(status, body, contentType, &processor.RouteData{Action: action, ControllerName: PluralOf(route.controller), Verb: r.Method})
 					w.Header().Set("Content-Type", mime)
 				}
 				break
