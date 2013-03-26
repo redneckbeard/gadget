@@ -33,8 +33,8 @@ func Configure() error {
 	if logFilePath != "" {
 		if !filepath.IsAbs(logFilePath) {
 			logFilePath = AbsPath(logFilePath)
-		} 
-		if f, err := os.OpenFile(logFilePath, os.O_RDWR | os.O_CREATE, 0666); err != nil {
+		}
+		if f, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE, 0666); err != nil {
 			return err
 		} else {
 			writer = f

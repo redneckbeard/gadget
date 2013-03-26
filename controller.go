@@ -13,7 +13,6 @@ func init() {
 	pascalCase = regexp.MustCompile(`[A-Z]+[a-z\d]+`)
 }
 
-
 const (
 	INDEX   = "index"
 	SHOW    = "show"
@@ -25,7 +24,7 @@ const (
 var (
 	controllers    = make(map[string]Controller)
 	controllerName *regexp.Regexp
-	pascalCase *regexp.Regexp
+	pascalCase     *regexp.Regexp
 	defaultActions = []string{INDEX, SHOW, CREATE, UPDATE, DESTROY}
 )
 

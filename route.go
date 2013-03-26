@@ -16,7 +16,6 @@ type Route struct {
 	subroutes     []*Route
 }
 
-
 func (route *Route) String() string {
 	return fmt.Sprintf(route.objectPattern.String())
 }

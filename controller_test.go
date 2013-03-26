@@ -25,10 +25,9 @@ type BrokenName struct {
 }
 
 //hyphenate should convert "PascalCase" into "pascal-case"
-func (s *ControllerSuite) TestHyphenateShouldConvertPascalcaseIntoPascalcase(c *C){
+func (s *ControllerSuite) TestHyphenateShouldConvertPascalcaseIntoPascalcase(c *C) {
 	c.Assert(hyphenate("PascalCase"), Equals, "pascal-case")
 }
-
 
 //NameOf(&TestController) should return "test"
 func (s *ControllerSuite) TestNameoftestcontrollerShouldReturnTest(c *C) {
@@ -56,9 +55,8 @@ func (s *ControllerSuite) TestGetotherShouldReturnErrorNoSuchControllerIsRegiste
 }
 
 func F(r *Request) (int, interface{}) {
-		return 200, "OK"
-	}
-
+	return 200, "OK"
+}
 
 //controller.Filter("missing", Filter) should panic if the controller has no method "missing"
 func (s *ControllerSuite) TestControllerfiltermissingFilterShouldPanicControllerHasNoMethodMissing(c *C) {

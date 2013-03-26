@@ -160,7 +160,7 @@ func (s *FormSuite) TestCallingCopyOnValidWidgetformAndWidgetShouldCopyValuesToW
 }
 
 //Calling Copy on a valid WidgetForm and a struct missing a field from the form should return an error
-func (s *FormSuite) TestCallingCopyOnValidWidgetformAndStructMissingFieldFromFormShouldReturnError(c *C){
+func (s *FormSuite) TestCallingCopyOnValidWidgetformAndStructMissingFieldFromFormShouldReturnError(c *C) {
 	form := &WidgetForm{}
 	Init(form)
 	widget := &BrokenWidget{}
@@ -173,7 +173,6 @@ func (s *FormSuite) TestCallingCopyOnValidWidgetformAndStructMissingFieldFromFor
 	err := Copy(form, widget)
 	c.Assert(err, ErrorMatches, `No "Quux" field found on forms.BrokenWidget struct`)
 }
-
 
 //Calling Copy on an invalid WidgetForm and a Widget should return an error
 func (s *FormSuite) TestCallingCopyOnInvalidWidgetformAndWidgetShouldCopyValuesToWidget(c *C) {

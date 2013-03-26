@@ -39,7 +39,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
 			status int
-			final string
+			final  string
 		)
 		req := NewRequest(r)
 		matched := false
@@ -47,7 +47,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 			if route.Match(req) != nil {
 				var (
 					action string
-					body interface{}
+					body   interface{}
 				)
 				matched = true
 				status, body, action = route.Respond(req)

@@ -67,7 +67,7 @@ func (field *StringField) Clean() {
 }
 
 func (field *StringField) Copy(v reflect.Value) {
-	v.SetString(field.Value)	
+	v.SetString(field.Value)
 }
 
 func (field *StringField) DefaultMessages() {
@@ -128,7 +128,7 @@ func (field *Float64Field) Clean() {
 }
 
 func (field *Float64Field) Copy(v reflect.Value) {
-	v.SetFloat(field.Value)	
+	v.SetFloat(field.Value)
 }
 
 func (field *Float64Field) DefaultMessages() {
@@ -164,7 +164,7 @@ func (field *BoolField) Clean() {
 }
 
 func (field *BoolField) Copy(v reflect.Value) {
-	v.SetBool(field.Value)	
+	v.SetBool(field.Value)
 }
 
 func (field *BoolField) DefaultMessages() {

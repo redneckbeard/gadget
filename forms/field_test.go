@@ -1,9 +1,9 @@
 package forms
 
 import (
-	. "launchpad.net/gocheck"
 	"errors"
 	"fmt"
+	. "launchpad.net/gocheck"
 	"time"
 )
 

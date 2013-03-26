@@ -31,8 +31,7 @@ func NewDefaultForm() *DefaultForm {
 func (f *DefaultForm) SetOptions()                    {}
 func (f *DefaultForm) Ready() bool                    { return f != nil }
 func (f *DefaultForm) FieldMap() map[string]FormField { return f.Fields }
-func (f *DefaultForm) ErrorMap() map[string]error   { return f.Errors }
-
+func (f *DefaultForm) ErrorMap() map[string]error     { return f.Errors }
 
 func Init(form Form) {
 	t := reflect.TypeOf(form).Elem()
@@ -104,11 +103,11 @@ func Copy(f Form, v interface{}) error {
 	}
 	structValue := reflect.ValueOf(v).Elem()
 	for name, field := range f.FieldMap() {
-		target := structValue.FieldByName(name)		
+		target := structValue.FieldByName(name)
 		if !target.IsValid() {
 			return errors.New(fmt.Sprintf(`No "%s" field found on %v struct`, name, reflect.TypeOf(v).Elem()))
 		}
-		if !target.CanSet () {
+		if !target.CanSet() {
 			return errors.New(`Cannot set value on "%s" field`)
 		}
 		field.Copy(target)
