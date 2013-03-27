@@ -51,6 +51,7 @@ func (r *Request) setPayload() {
 	case "application/json":
 		if r.Request.Body != nil {
 			raw, err := ioutil.ReadAll(r.Request.Body)
+			defer r.Request.Body.Close()
 			if err != nil {
 				return
 			}
