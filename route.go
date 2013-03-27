@@ -123,6 +123,7 @@ func (route *Route) Respond(r *Request) (status int, body interface{}, action st
 		return 404, "", ""
 	}
 	r.UrlParams = route.GetParams(r)
+	r.SetUser()
 	status, body = route.controller.RunFilters(r, action)
 	if status != 0 {
 		return

@@ -2,6 +2,7 @@ package gadget
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/redneckbeard/gadget/env"
 	"io/ioutil"
@@ -15,6 +16,7 @@ type Request struct {
 	Payload   map[string]interface{}
 	Method    string
 	UrlParams map[string]string
+	User      User
 }
 
 func NewRequest(raw *http.Request) *Request {
@@ -59,6 +61,18 @@ func (r *Request) setPayload() {
 		}
 	}
 	r.Payload = payload
+}
+
+func (r *Request) SetUser() error {
+	if r.UrlParams == nil {
+		return errors.New("UrlParams must be set prior to user identification")
+	}
+	if identifyUser != nil {
+		r.User = identifyUser(r)
+	} else {
+		r.User = &AnonymousUser{}
+	}
+	return nil
 }
 
 func (r *Request) Log(status, contentLength int) {
