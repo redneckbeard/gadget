@@ -8,12 +8,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	"strings"
 )
 
 type Request struct {
 	*http.Request
 	Path      string
-	Payload   map[string]interface{}
+	Params   map[string]interface{}
 	Method    string
 	UrlParams map[string]string
 	User      User
@@ -21,7 +22,7 @@ type Request struct {
 
 func NewRequest(raw *http.Request) *Request {
 	r := &Request{Request: raw, Path: raw.URL.Path[1:], Method: raw.Method}
-	r.setPayload()
+	r.setParams()
 	return r
 }
 
@@ -33,35 +34,45 @@ func (r *Request) ContentType() string {
 	return r.Request.Header.Get("Content-Type")
 }
 
-func (r *Request) setPayload() {
-	payload := make(map[string]interface{})
-	switch r.Request.Header.Get("Content-Type") {
-	case "":
-		err := r.ParseForm()
-		if err != nil {
-			return
+func unpackValues(params map[string]interface{}, values map[string][]string) {
+	for k, v := range values {
+		if len(v) == 1 {
+			params[k] = v[0]
+		} else {
+			params[k] = v
 		}
-		for k, v := range r.Form {
-			if len(v) == 1 {
-				payload[k] = v[0]
-			} else {
-				payload[k] = v
-			}
-		}
-	case "application/json":
+	}
+}
+
+func (r *Request) setParams() {
+	params := make(map[string]interface{})
+	switch ct := r.Request.Header.Get("Content-Type"); {
+	case ct == "application/json":
 		if r.Request.Body != nil {
 			raw, err := ioutil.ReadAll(r.Request.Body)
 			defer r.Request.Body.Close()
 			if err != nil {
 				return
 			}
-			err = json.Unmarshal(raw, payload)
+			err = json.Unmarshal(raw, params)
 			if err != nil {
 				return
 			}
 		}
+	case strings.HasPrefix(ct, "multipart/form-data"):
+		err := r.ParseMultipartForm(10 * 1024 * 1024)
+		if err != nil {
+			return
+		}
+		unpackValues(params, r.MultipartForm.Value)
+	default:
+		err := r.ParseForm()
+		if err != nil {
+			return
+		}
+		unpackValues(params, r.Form)
 	}
-	r.Payload = payload
+	r.Params = params
 }
 
 func (r *Request) SetUser() error {

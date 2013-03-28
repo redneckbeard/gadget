@@ -33,7 +33,7 @@ type AuthedUser struct{}
 func (u *AuthedUser) Authenticated() bool { return true }
 
 func FakeAuth(r *Request) User {
-	if authed, ok := r.Payload["authed"]; ok {
+	if authed, ok := r.Params["authed"]; ok {
 		if authed.(string) == "yes" {
 			return &AuthedUser{}
 		}
