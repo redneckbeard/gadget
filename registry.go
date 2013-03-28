@@ -38,35 +38,38 @@ func Prefixed(prefix string, nested ...*Route) *Route {
 func Handler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
-			status int
-			final  string
+			status  int
+			final   string
+			action  string
+			body    interface{}
+			matched *Route
 		)
 		req := NewRequest(r)
-		matched := false
 		for _, route := range routes {
 			if route.Match(req) != nil {
-				var (
-					action string
-					body   interface{}
-				)
-				matched = true
+				matched = route
 				status, body, action = route.Respond(req)
 				if status == 301 || status == 302 {
 					final = body.(string)
 					http.Redirect(w, r, final, status)
-				} else {
-					var mime string
-					contentType := req.ContentType()
-					status, final, mime, _ = processor.Process(status, body, contentType, &processor.RouteData{Action: action, ControllerName: PluralOf(route.controller), Verb: r.Method})
-					w.Header().Set("Content-Type", mime)
 				}
 				break
 			}
 		}
-		if !matched {
+		routeData := &processor.RouteData{
+			Action: action,
+			Verb:   r.Method,
+		}
+		if matched == nil {
 			status = 404
 			final = ""
+		} else {
+			routeData.ControllerName = PluralOf(matched.controller)
 		}
+		contentType := req.ContentType()
+
+		status, final, mime, _ := processor.Process(status, body, contentType, routeData)
+		w.Header().Set("Content-Type", mime)
 		w.WriteHeader(status)
 		fmt.Fprint(w, final)
 		req.Log(status, len(final))
