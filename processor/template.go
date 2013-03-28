@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/redneckbeard/gadget/env"
 	"html/template"
+	"strconv"
 )
 
 func templatePath(components ...string) string {
@@ -16,9 +17,15 @@ func TemplateProcessor(status int, body interface{}, data *RouteData) (int, stri
 	if err != nil {
 		return 404, err.Error()
 	}
-	_, err = t.ParseFiles(templatePath(data.ControllerName, data.Action))
+	var mainTemplatePath string
+	if status == 200 {
+		mainTemplatePath = templatePath(data.ControllerName, data.Action)
+	} else {
+		mainTemplatePath = templatePath(strconv.FormatInt(int64(status), 10))
+	}
+	_, err = t.ParseFiles(mainTemplatePath)
 	if err != nil {
-		return 404, err.Error()
+		return 500, err.Error()
 	}
 	buf := new(bytes.Buffer)
 	err = t.Execute(buf, body)
