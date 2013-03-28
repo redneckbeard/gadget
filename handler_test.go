@@ -20,6 +20,9 @@ func (s *HandlerSuite) SetUpSuite(c *C) {
 	processor.Define("application/json", processor.JsonProcessor)
 	Routes(SetIndex("maps"), Resource("resources"), Resource("uuids"))
 }
+func (s *HandlerSuite) TearDownSuite(c *C) {
+	Clear()
+}
 
 var _ = Suite(&HandlerSuite{})
 
