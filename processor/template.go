@@ -32,5 +32,5 @@ func TemplateProcessor(status int, body interface{}, data *RouteData) (int, stri
 	if err != nil {
 		return 500, err.Error()
 	}
-	return 200, string(buf.Bytes())
+	return status, string(buf.Bytes())
 }

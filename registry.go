@@ -52,6 +52,8 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 				if status == 301 || status == 302 {
 					final = body.(string)
 					http.Redirect(w, r, final, status)
+					req.Log(status, len(final))
+					return
 				}
 				break
 			}
