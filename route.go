@@ -17,7 +17,10 @@ type Route struct {
 }
 
 func (route *Route) String() string {
-	return fmt.Sprintf(route.objectPattern.String())
+	if route.objectPattern != nil {
+		return route.objectPattern.String()
+	}
+	return route.indexPattern.String()
 }
 
 func (route *Route) buildPatterns(prefix string) {

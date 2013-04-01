@@ -228,7 +228,6 @@ Wish list
 
 Here are a few features that are clearly necessary but I have yet to implement:
 
-* Methods on gadget.Request for altering response headers, setting cookies, etc.
 * Django-style middleware
 
 Thanks for watching

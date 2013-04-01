@@ -1,7 +1,6 @@
 package gadget
 
 import (
-	"fmt"
 	"github.com/redneckbeard/gadget/processor"
 	"net/http"
 )
@@ -43,6 +42,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 			action  string
 			body    interface{}
 			matched *Route
+			response *Response
 		)
 		req := NewRequest(r)
 		for _, route := range routes {
@@ -70,10 +70,19 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 		}
 		contentType := req.ContentType()
 
+		if resp, ok := body.(*Response); ok {
+			body = resp.Body
+			response = resp
+		} else {
+			response = NewResponse(body)
+		}
+
 		status, final, mime, _ := processor.Process(status, body, contentType, routeData)
-		w.Header().Set("Content-Type", mime)
-		w.WriteHeader(status)
-		fmt.Fprint(w, final)
-		req.Log(status, len(final))
+
+		response.status = status
+		response.Final = final
+		response.Headers.Set("Content-Type", mime)
+		response.write(w)
+		req.Log(status, len(response.Final))
 	}
 }
