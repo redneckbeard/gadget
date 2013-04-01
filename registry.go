@@ -37,11 +37,11 @@ func Prefixed(prefix string, nested ...*Route) *Route {
 func Handler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
-			status  int
-			final   string
-			action  string
-			body    interface{}
-			matched *Route
+			status   int
+			final    string
+			action   string
+			body     interface{}
+			matched  *Route
 			response *Response
 		)
 		req := NewRequest(r)
@@ -50,7 +50,11 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 				matched = route
 				status, body, action = route.Respond(req)
 				if status == 301 || status == 302 {
-					final = body.(string)
+					if resp, ok := body.(*Response); ok {
+						final = resp.Body.(string)
+					} else {
+						final = body.(string)
+					}
 					http.Redirect(w, r, final, status)
 					req.Log(status, len(final))
 					return
@@ -71,13 +75,12 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 		contentType := req.ContentType()
 
 		if resp, ok := body.(*Response); ok {
-			body = resp.Body
 			response = resp
 		} else {
 			response = NewResponse(body)
 		}
 
-		status, final, mime, _ := processor.Process(status, body, contentType, routeData)
+		status, final, mime, _ := processor.Process(status, response.Body, contentType, routeData)
 
 		response.status = status
 		response.Final = final
