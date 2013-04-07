@@ -1,19 +1,17 @@
-package processor
+package templates
 
 import (
 	"bytes"
 	"github.com/redneckbeard/gadget/env"
+	"github.com/redneckbeard/gadget/processor"
 	"html/template"
 	"strconv"
-	"time"
 )
 
-func now(layout string) string {
-	return time.Now().Format(layout)
-}
+var helpers = make(template.FuncMap)
 
-var funcMap = template.FuncMap{
-	"now": now,
+func AddHelper(name string, f interface{}) {
+	helpers[name] = f
 }
 
 func templatePath(components ...string) string {
@@ -21,12 +19,12 @@ func templatePath(components ...string) string {
 	return env.AbsPath(append([]string{"templates"}, components...)...)
 }
 
-func TemplateProcessor(status int, body interface{}, data *RouteData) (int, string) {
+func TemplateProcessor(status int, body interface{}, data *processor.RouteData) (int, string) {
 	t, err := template.ParseFiles(templatePath("base"))
 	if err != nil {
 		return 404, err.Error()
 	}
-	t = t.Funcs(funcMap)
+	t = t.Funcs(helpers)
 	var mainTemplatePath string
 	if status == 200 {
 		mainTemplatePath = templatePath(data.ControllerName, data.Action)
