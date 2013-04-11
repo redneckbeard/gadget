@@ -6,41 +6,52 @@ import (
 	"reflect"
 )
 
-// the Form interface has one method only required, SetOptions.
-// This is where we configure how stuff is actually rendered in the form.
+// Form is the interface that wraps the validation functionality provided by this
+// package. To implement the Form interface, struct types must embed a pointer to
+// DefaultForm, since the interface includes unexported fields that DefaultForm
+// provides. DefaultForm implements all the methods necessary to satisfy the interface.
 type Form interface {
-	SetOptions()
-	FieldMap() map[string]FormField
-	Ready() bool
-	ErrorMap() map[string]error
+	HasErrors() bool
+	errorMap() map[string]error
+	fieldMap() map[string]FormField
+	ready() bool
 }
 
-// The Default form can be embedded to provide, uh, default, behavior.
+// DefaultForm provides a complete implementation of the Form interface for you to
+// embed in your form struct.
 type DefaultForm struct {
 	Fields map[string]FormField
 	Errors map[string]error
 }
 
-func NewDefaultForm() *DefaultForm {
+// HasErrors returns true if the Error method of any of a Form's FormField
+// members returns non-nil.
+func (f *DefaultForm) HasErrors() bool { return len(f.Errors) > 0 }
+
+func (f *DefaultForm) errorMap() map[string]error     { return f.Errors }
+func (f *DefaultForm) fieldMap() map[string]FormField { return f.Fields }
+func (f *DefaultForm) ready() bool                    { return f != nil }
+
+func newDefaultForm() *DefaultForm {
 	return &DefaultForm{
-		Fields: map[string]FormField{},
-		Errors: map[string]error{},
+		Fields: make(map[string]FormField),
+		Errors: make(map[string]error),
 	}
 }
 
-func (f *DefaultForm) SetOptions()                    {}
-func (f *DefaultForm) Ready() bool                    { return f != nil }
-func (f *DefaultForm) FieldMap() map[string]FormField { return f.Fields }
-func (f *DefaultForm) ErrorMap() map[string]error     { return f.Errors }
-
-func Init(form Form) {
+// Init correctly initializes all FormFields and the embedded DefaultForm on a
+// struct. Its first argument a Form, and its second an optional func that will
+// receive the form as its only argument after initialization is complete. This
+// callback enables you to do additional setup on FormFields included in your
+// Form.
+func Init(form Form, initializer func(Form)) {
 	t := reflect.TypeOf(form).Elem()
 	v := reflect.ValueOf(form).Elem()
 
 	defaultFormField := v.FieldByName("DefaultForm")
 
 	// Initialize a DefaultForm struct with a non-nil Fields map
-	defaultForm := NewDefaultForm()
+	defaultForm := newDefaultForm()
 	defaultFormField.Set(reflect.ValueOf(defaultForm))
 
 	fieldMap := defaultForm.Fields
@@ -49,7 +60,7 @@ func Init(form Form) {
 		fv := v.Field(i)
 		if _, ok := fv.Interface().(FormField); ok {
 			// Initialize a BaseField
-			base := reflect.ValueOf(NewBaseField())
+			base := reflect.ValueOf(newBaseField())
 			// Initialize a struct of the correct FormField type
 			newField := reflect.New(fv.Type().Elem())
 			newField.Elem().FieldByName("BaseField").Set(base)
@@ -58,59 +69,88 @@ func Init(form Form) {
 			fieldMap[ft.Name] = fv.Interface().(FormField)
 		}
 	}
+	if initializer != nil {
+		initializer(form)
+	}
 }
 
-// The Populate function copies data from a request payload into a form struct
+// Populate copies data from a map[string]interface{} value into the Data members
+// of the corresponding FormFields of the Form. The keys of the map must be a
+// case-sensitive exact match of exported names of FormFields on the struct.
+// Populate will return an error if Init has not yet been called on the Form.
+// 
+// Note that the type of the second argument is not map[string][]string. This is
+// meant to provide ease of use with gadget.Request.Params over http.Request.Form.
 func Populate(form Form, payload map[string]interface{}) error {
-	if !form.Ready() {
+	if !form.ready() {
 		return errors.New("Cannot populate uninitialized form")
 	}
-	for name, field := range form.FieldMap() {
+	for name, field := range form.fieldMap() {
 		data := payload[name]
 		field.Set(data)
 	}
 	return nil
 }
 
-// Run a validation on the form with IsValid. With no configuration, this simply requires all values to exist and to be coercible from the value in their payload to their type.
-// Optionally, Django-style `Clean<Fieldname>` methods can be specified that set the value from the payload in the form's Field object.
+// IsValid calls the Clean method on all of a Form's FormFields. As a result, if
+// IsValid returns true, the Value fields of all required FormFields will be
+// non-nil. If false, error messages may be retrieved by the Error method of an
+// individual field or by retrieving the error for a field by name from the Form's
+// Errors map.
+// 
+// If validation is needed beyond what a FormField type provides by default, Forms
+// may define special methods to perform more robust checks on the value of the
+// Data field. These methods are named "Clean<Fieldname>" and receive the field
+// being validated as their argument. An example is provided below.
 func IsValid(f Form) bool {
-	if !f.Ready() {
+	if !f.ready() {
 		return false
 	}
 	t := reflect.TypeOf(f)
-	for name, field := range f.FieldMap() {
-		field.Clean()
-		if customClean, ok := t.MethodByName("Clean" + name); ok {
-			args := []reflect.Value{reflect.ValueOf(f), reflect.ValueOf(field)}
-			customClean.Func.Call(args)
+	for name, field := range f.fieldMap() {
+		if field.isNil() {
+			if field.isRequired() {
+				field.SetError("This field is required")
+			}
+		} else {
+			field.Clean()
+			if customClean, ok := t.MethodByName("Clean" + name); ok {
+				args := []reflect.Value{reflect.ValueOf(f), reflect.ValueOf(field)}
+				customClean.Func.Call(args)
+			}
 		}
 		if field.Error() != nil {
-			f.ErrorMap()[name] = field.Error()
+			f.errorMap()[name] = field.Error()
 		}
 	}
-	if len(f.ErrorMap()) == 0 {
+	if len(f.errorMap()) == 0 {
 		return true
 	}
 	return false
 }
 
-// Copy final data from form into struct
-// If there's a mismatch between the exported fields of the form and the exported fields of the model struct, forms can provide a `Copy(*model)` method -- otherwise a 1:1 field match is assumed
-func Copy(f Form, v interface{}) error {
+// Copy transfers data from a validated Form to another struct for further
+// processing (presumably persistance). The target struct must have a field of
+// the appropriate type and the same name for every FormField in the Form.
+//
+// 
+// Copy will return an error if the Form has not passed validation, if it cannot
+// find a corresponding field on the target struct for a FormField, or if it
+// cannot set the FormField's value on the target field.
+func Copy(f Form, target interface{}) error {
 	if !IsValid(f) {
 		return errors.New("Cannot copy from invalid form")
 	}
-	structValue := reflect.ValueOf(v).Elem()
-	for name, field := range f.FieldMap() {
-		target := structValue.FieldByName(name)
-		if !target.IsValid() {
-			return errors.New(fmt.Sprintf(`No "%s" field found on %v struct`, name, reflect.TypeOf(v).Elem()))
+	structValue := reflect.ValueOf(target).Elem()
+	for name, field := range f.fieldMap() {
+		targetField := structValue.FieldByName(name)
+		if !targetField.IsValid() {
+			return errors.New(fmt.Sprintf(`No "%s" field found on %v struct`, name, reflect.TypeOf(target).Elem()))
 		}
-		if !target.CanSet() {
+		if !targetField.CanSet() {
 			return errors.New(`Cannot set value on "%s" field`)
 		}
-		field.Copy(target)
+		field.Copy(targetField)
 	}
 	return nil
 }

@@ -8,26 +8,53 @@ import (
 	"time"
 )
 
+// FormField is the interface that encapsulates field-level form operations.
+// All types implementing FormField should be struct types that embed
+// BaseField, which provides all methods except Clean and Copy. Individual
+// field types must implement those methods appropriatly for the types of data
+// they are intended to validate.
+// 
+// By virtue of their embedded BaseField, all FormFields have a Data field of
+// type interface{}. The FormFields themselves conventionally have a Value
+// field of the type that they purport to validate. All FormFields are required
+// unless their Required field is set to false in the form's SetOptions method.
+//
+// The forms package ships with FormField types for string, int, bool, float64,
+// and time.Time values. Users can easily define additional fields. Refer to
+// the source for the builtin FormField types for details of how to define new
+// ones.
 type FormField interface {
-	Set(interface{})
 	Clean()
-	SetError(string)
+	Copy(reflect.Value)
+	DefaultMessages()
 	Error() error
 	GetMessage(string) string
+	Set(interface{})
+	isNil() bool
+	SetError(string)
 	SetMessage(string, string)
-	DefaultMessages()
-	Copy(reflect.Value)
+	isRequired() bool
 }
 
 type BaseField struct {
 	err      error
 	Data     interface{}
 	Messages map[string]string
+	Required bool
+
 }
 
-func NewBaseField() *BaseField {
+func newBaseField() *BaseField {
 	messages := make(map[string]string)
-	return &BaseField{Messages: messages}
+	return &BaseField{Messages: messages, Required: true}
+}
+
+func (field *BaseField) isNil() bool {
+	return field.Data == nil
+}
+
+func (field *BaseField) isRequired() bool {
+	return field.Required
 }
 
 func (field *BaseField) Set(data interface{}) {
@@ -52,6 +79,7 @@ func (field *BaseField) SetMessage(msgName string, msgValue string) {
 
 func (field *BaseField) DefaultMessages() {}
 
+// StringField validates the presences of a string value.
 type StringField struct {
 	*BaseField
 	Value string
@@ -74,6 +102,8 @@ func (field *StringField) DefaultMessages() {
 	field.SetMessage("type", "A string value is required")
 }
 
+// IntField validates the presence of an int value. If the Data on the
+// FormField is string, its Clean method will attempt to parse it.
 type IntField struct {
 	*BaseField
 	Value int
@@ -104,6 +134,9 @@ func (field *IntField) DefaultMessages() {
 	field.SetMessage("type", "An integer value is required")
 }
 
+// Float64Field validates the presence of a float64 value. If the Data on the
+// FormField is a string, the Clean method will attempt to parse it. If it is
+// an int, it will cast it to a float64.
 type Float64Field struct {
 	*BaseField
 	Value float64
@@ -140,11 +173,22 @@ type BoolField struct {
 	Value bool
 }
 
+// Boolfield validates the presence of a boolean value. If the Data on the
+// FormField is an int, 0 is taken for false and 1 for true. If it is a string,
+// it is parsed by strconv.ParseBool.
 func (field *BoolField) Clean() {
 	switch field.Data.(type) {
 	case bool:
 		field.Value = field.Data.(bool)
 	case int:
+		switch field.Data.(int) {
+		case 0:
+			field.Value = false
+		case 1:
+			field.Value = true
+		default:
+			field.SetError(field.GetMessage("integer_out_of_bounds"))
+		}
 		field.Value = field.Data.(int) != 0
 	case string:
 		str := field.Data.(string)
@@ -169,8 +213,13 @@ func (field *BoolField) Copy(v reflect.Value) {
 
 func (field *BoolField) DefaultMessages() {
 	field.SetMessage("type", "An boolean value is required")
+	field.SetMessage("integer_out_of_bounds", "Only 0 and 1 are valid integer values for a boolean field")
 }
 
+// TimeField validates the presence of a Time value. If the value is an int64, it
+// is parsed as seconds since the epoch. If it is a string, TimeField will attempt
+// to parse it with the value of its Format field as the layout. The default time
+// format is RFC 33339.
 type TimeField struct {
 	*BaseField
 	Value  time.Time
@@ -183,6 +232,8 @@ func (field *TimeField) Clean() {
 	}
 	typeErr := fmt.Sprintf(field.GetMessage("type"), field.Format)
 	switch field.Data.(type) {
+	case time.Time:
+		field.Value = field.Date.(time.Time)
 	case int64:
 		i := field.Data.(int64)
 		if i < 0 {

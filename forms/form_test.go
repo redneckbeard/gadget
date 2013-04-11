@@ -39,24 +39,24 @@ type Widget struct {
 //Calling Ready() on an uninitialized Form should return false
 func (s *FormSuite) TestCallingReadyOnUninitializedFormShouldReturnFalse(c *C) {
 	f := &WidgetForm{}
-	c.Assert(f.Ready(), Equals, false)
+	c.Assert(f.ready(), Equals, false)
 }
 
 //Calling Ready() on an initialized Form should return true
 func (s *FormSuite) TestCallingReadyOnInitializedFormShouldReturnFalse(c *C) {
 	f := &WidgetForm{}
-	Init(f)
-	c.Assert(f.Ready(), Equals, true)
+	Init(f, nil)
+	c.Assert(f.ready(), Equals, true)
 }
 
 //An initialized Form should have a properly created Fields map
 func (s *FormSuite) TestInitializedFormHasProperlyCreatedFieldsMap(c *C) {
 	f := &WidgetForm{}
-	Init(f)
-	fields := f.FieldMap()
-	c.Assert(fields["Foo"], FitsTypeOf, &StringField{BaseField: NewBaseField()})
-	c.Assert(fields["Bar"], FitsTypeOf, &StringField{BaseField: NewBaseField()})
-	c.Assert(fields["Bar"], FitsTypeOf, &StringField{BaseField: NewBaseField()})
+	Init(f, nil)
+	fields := f.fieldMap()
+	c.Assert(fields["Foo"], FitsTypeOf, &StringField{BaseField: newBaseField()})
+	c.Assert(fields["Bar"], FitsTypeOf, &StringField{BaseField: newBaseField()})
+	c.Assert(fields["Bar"], FitsTypeOf, &StringField{BaseField: newBaseField()})
 	c.Assert(fields["Quux"], FitsTypeOf, &IntField{})
 }
 
@@ -75,7 +75,7 @@ func (s *FormSuite) TestCallingPopulateOnUninitializedFormShouldReturnError(c *C
 //Calling Populate on a TestForm with valid data should set the values of those fields
 func (s *FormSuite) TestCallingPopulateOnTestformValidDataShouldSetValuesThoseFields(c *C) {
 	form := &WidgetForm{}
-	Init(form)
+	Init(form, nil)
 	Populate(form, map[string]interface{}{
 		"Foo":  "baz",
 		"Bar":  "quux",
@@ -90,7 +90,7 @@ func (s *FormSuite) TestCallingPopulateOnTestformValidDataShouldSetValuesThoseFi
 //Calling Populate on a TestForm with invalid data should set the values of those fields
 func (s *FormSuite) TestCallingPopulateOnTestformInvalidDataShouldSetValuesThoseFields(c *C) {
 	form := &WidgetForm{}
-	Init(form)
+	Init(form, nil)
 	Populate(form, map[string]interface{}{
 		"Foo":  "baz",
 		"Bar":  "quux",
@@ -105,7 +105,7 @@ func (s *FormSuite) TestCallingPopulateOnTestformInvalidDataShouldSetValuesThose
 //Calling IsValid on a TestForm with valid data should return true
 func (s *FormSuite) TestCallingIsvalidOnTestformValidDataShouldReturnTrue(c *C) {
 	form := &WidgetForm{}
-	Init(form)
+	Init(form, nil)
 	Populate(form, map[string]interface{}{
 		"Foo":  "baz",
 		"Bar":  "quux",
@@ -118,7 +118,7 @@ func (s *FormSuite) TestCallingIsvalidOnTestformValidDataShouldReturnTrue(c *C) 
 //Calling IsValid on a TestForm with invalid data should return false
 func (s *FormSuite) TestCallingIsvalidOnTestformInvalidDataShouldReturnFalse(c *C) {
 	form := &WidgetForm{}
-	Init(form)
+	Init(form, nil)
 	Populate(form, map[string]interface{}{
 		"Foo":  "baz",
 		"Bar":  "quux",
@@ -131,7 +131,7 @@ func (s *FormSuite) TestCallingIsvalidOnTestformInvalidDataShouldReturnFalse(c *
 //Calling IsValid on a form with a custom Clean method should run the method on the field
 func (s *FormSuite) TestCallingIsvalidOnFormCustomCleanMethodShouldRunMethodOnField(c *C) {
 	form := &WidgetForm{}
-	Init(form)
+	Init(form, nil)
 	Populate(form, map[string]interface{}{
 		"Foo":  "baz",
 		"Bar":  "quux",
@@ -144,7 +144,7 @@ func (s *FormSuite) TestCallingIsvalidOnFormCustomCleanMethodShouldRunMethodOnFi
 //Calling Copy on a valid WidgetForm and a Widget should copy the values to the widget
 func (s *FormSuite) TestCallingCopyOnValidWidgetformAndWidgetShouldCopyValuesToWidget(c *C) {
 	form := &WidgetForm{}
-	Init(form)
+	Init(form, nil)
 	widget := &Widget{}
 	Populate(form, map[string]interface{}{
 		"Foo":  "baz",
@@ -162,7 +162,7 @@ func (s *FormSuite) TestCallingCopyOnValidWidgetformAndWidgetShouldCopyValuesToW
 //Calling Copy on a valid WidgetForm and a struct missing a field from the form should return an error
 func (s *FormSuite) TestCallingCopyOnValidWidgetformAndStructMissingFieldFromFormShouldReturnError(c *C) {
 	form := &WidgetForm{}
-	Init(form)
+	Init(form, nil)
 	widget := &BrokenWidget{}
 	Populate(form, map[string]interface{}{
 		"Foo":  "baz",
@@ -177,7 +177,7 @@ func (s *FormSuite) TestCallingCopyOnValidWidgetformAndStructMissingFieldFromFor
 //Calling Copy on an invalid WidgetForm and a Widget should return an error
 func (s *FormSuite) TestCallingCopyOnInvalidWidgetformAndWidgetShouldCopyValuesToWidget(c *C) {
 	form := &WidgetForm{}
-	Init(form)
+	Init(form, nil)
 	widget := &Widget{}
 	Populate(form, map[string]interface{}{
 		"Foo":  "baz",
