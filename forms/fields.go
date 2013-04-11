@@ -233,7 +233,7 @@ func (field *TimeField) Clean() {
 	typeErr := fmt.Sprintf(field.GetMessage("type"), field.Format)
 	switch field.Data.(type) {
 	case time.Time:
-		field.Value = field.Date.(time.Time)
+		field.Value = field.Data.(time.Time)
 	case int64:
 		i := field.Data.(int64)
 		if i < 0 {
