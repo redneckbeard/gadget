@@ -14,14 +14,14 @@ import (
 type HandlerSuite struct{}
 
 func (s *HandlerSuite) SetUpSuite(c *C) {
-	Register(&MapController{New()})
-	Register(&ResourceController{New()})
-	Register(&UuidController{New()})
+	Register(&MapController{})
+	Register(&ResourceController{})
+	Register(&UuidController{})
 	processor.Define("application/json", processor.JsonProcessor)
 	Routes(SetIndex("maps"), Resource("resources"), Resource("uuids"))
 }
 func (s *HandlerSuite) TearDownSuite(c *C) {
-	Clear()
+	clear()
 }
 
 var _ = Suite(&HandlerSuite{})

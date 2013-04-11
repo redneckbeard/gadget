@@ -7,14 +7,14 @@ import (
 	"github.com/redneckbeard/gadget/env"
 	"io/ioutil"
 	"net/http"
-	"time"
 	"strings"
+	"time"
 )
 
 type Request struct {
 	*http.Request
 	Path      string
-	Params   map[string]interface{}
+	Params    map[string]interface{}
 	Method    string
 	UrlParams map[string]string
 	User      User
@@ -75,7 +75,7 @@ func (r *Request) setParams() {
 	r.Params = params
 }
 
-func (r *Request) SetUser() error {
+func (r *Request) setUser() error {
 	if r.UrlParams == nil {
 		return errors.New("UrlParams must be set prior to user identification")
 	}

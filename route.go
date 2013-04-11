@@ -7,86 +7,86 @@ import (
 	"strings"
 )
 
-type Route struct {
+type route struct {
 	segment       string
 	indexPattern  *regexp.Regexp
 	objectPattern *regexp.Regexp
 	actionPattern *regexp.Regexp
 	controller    Controller
-	subroutes     []*Route
+	subroutes     []*route
 }
 
-func (route *Route) String() string {
-	if route.objectPattern != nil {
-		return route.objectPattern.String()
+func (rte *route) String() string {
+	if rte.objectPattern != nil {
+		return rte.objectPattern.String()
 	}
-	return route.indexPattern.String()
+	return rte.indexPattern.String()
 }
 
-func (route *Route) buildPatterns(prefix string) {
+func (rte *route) buildPatterns(prefix string) {
 	// Don't bother generating fancy regexps if we're looking at '/'
-	if route.segment == "" {
-		route.indexPattern = regexp.MustCompile(`^$`)
+	if rte.segment == "" {
+		rte.indexPattern = regexp.MustCompile(`^$`)
 	} else {
-		basePattern := prefix + route.segment
-		route.indexPattern = regexp.MustCompile("^" + basePattern + "$")
-		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, NameOf(route.controller), route.controller.IdPattern())
-		route.objectPattern = regexp.MustCompile(patternWithId)
-		actions := route.controller.ExtraActionNames()
+		basePattern := prefix + rte.segment
+		rte.indexPattern = regexp.MustCompile("^" + basePattern + "$")
+		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, nameOf(rte.controller), rte.controller.IdPattern())
+		rte.objectPattern = regexp.MustCompile(patternWithId)
+		actions := rte.controller.extraActionNames()
 		if len(actions) > 0 {
 			actionPatternString := fmt.Sprintf(`^%s/(?:%s)$`, basePattern, strings.Join(actions, "|"))
-			route.actionPattern = regexp.MustCompile(actionPatternString)
+			rte.actionPattern = regexp.MustCompile(actionPatternString)
 		}
 	}
 	// Calls to Prefixed generate routes without controllers, and the value of prefix is already all set for those
-	if route.controller != nil {
-		prefix += fmt.Sprintf(`%s/(?P<%s_id>%s)/`, route.segment, NameOf(route.controller), route.controller.IdPattern())
+	if rte.controller != nil {
+		prefix += fmt.Sprintf(`%s/(?P<%s_id>%s)/`, rte.segment, nameOf(rte.controller), rte.controller.IdPattern())
 	} else {
 		prefix += "/"
 	}
-	for _, r := range route.subroutes {
+	for _, r := range rte.subroutes {
 		r.buildPatterns(prefix)
 	}
 }
 
-func (route *Route) Flatten() []*Route {
-	var flattened []*Route
-	if route.controller != nil {
-		flattened = append(flattened, route)
+func (rte *route) flatten() []*route {
+	var flattened []*route
+	if rte.controller != nil {
+		flattened = append(flattened, rte)
 	}
-	for _, r := range route.subroutes {
-		flattened = append(flattened, r.Flatten()...)
+	for _, r := range rte.subroutes {
+		flattened = append(flattened, r.flatten()...)
 	}
 	return flattened
 }
 
-func newRoute(segment string) *Route {
+func newRoute(segment string) *route {
 	if segment == "" {
-		return &Route{segment: segment}
+		return &route{segment: segment}
 	}
-	controller, err := Get(segment)
+	controller, err := getController(segment)
 	if err != nil {
 		panic(err)
 	}
-	route := &Route{segment: segment, controller: controller}
-	return route
+	rte := &route{segment: segment, controller: controller}
+	return rte
 }
 
-func (route *Route) Match(r *Request) *regexp.Regexp {
+func (rte *route) Match(r *Request) *regexp.Regexp {
 	switch {
-	case route.objectPattern != nil && route.objectPattern.MatchString(r.Path):
-		return route.objectPattern
-	case route.actionPattern != nil && route.actionPattern.MatchString(r.Path):
-		return route.actionPattern
-	case route.indexPattern.MatchString(r.Path):
-		return route.indexPattern
+	case rte.actionPattern != nil && rte.actionPattern.MatchString(r.Path):
+		return rte.actionPattern
+	case rte.objectPattern != nil && rte.objectPattern.MatchString(r.Path):
+		return rte.objectPattern
+	case rte.indexPattern.MatchString(r.Path):
+		return rte.indexPattern
 	}
 	return nil
 }
 
-func (route *Route) GetParams(r *Request) map[string]string {
+func (rte *route) GetParams(r *Request) map[string]string {
 	params := make(map[string]string)
-	pattern := route.Match(r)
+	pattern := rte.Match(r)
 	if pattern.NumSubexp() > 0 {
 		names := pattern.SubexpNames()
 		matches := pattern.FindStringSubmatch(r.Path)
@@ -100,10 +100,10 @@ func (route *Route) GetParams(r *Request) map[string]string {
 	return params
 }
 
-func (route *Route) GetActionName(r *Request) (action string) {
-	atIndex := route.indexPattern.MatchString(r.Path)
+func (rte *route) GetActionName(r *Request) (action string) {
+	atIndex := rte.indexPattern.MatchString(r.Path)
 	switch {
-	case route.actionPattern != nil && route.actionPattern.MatchString(r.Path):
+	case rte.actionPattern != nil && rte.actionPattern.MatchString(r.Path):
 		segments := strings.Split(r.Path, "/")
 		action = segments[len(segments)-1]
 	case atIndex && r.Method == "GET":
@@ -120,26 +120,26 @@ func (route *Route) GetActionName(r *Request) (action string) {
 	return
 }
 
-func (route *Route) Respond(r *Request) (status int, body interface{}, action string) {
-	action = route.GetActionName(r)
+func (rte *route) Respond(r *Request) (status int, body interface{}, action string) {
+	action = rte.GetActionName(r)
 	if action == "" {
 		return 404, "", ""
 	}
-	r.UrlParams = route.GetParams(r)
-	r.SetUser()
-	status, body = route.controller.RunFilters(r, action)
+	r.UrlParams = rte.GetParams(r)
+	r.setUser()
+	status, body = rte.controller.runFilters(r, action)
 	if status != 0 {
 		return
 	}
 	var methodName string
-	if extra, ok := route.controller.ExtraActions()[action]; ok {
+	if extra, ok := rte.controller.extraActions()[action]; ok {
 		methodName = extra
 	} else {
 		methodName = strings.Title(action)
 	}
-	t := reflect.TypeOf(route.controller)
+	t := reflect.TypeOf(rte.controller)
 	method, _ := t.MethodByName(methodName)
-	arguments := []reflect.Value{reflect.ValueOf(route.controller), reflect.ValueOf(r)}
+	arguments := []reflect.Value{reflect.ValueOf(rte.controller), reflect.ValueOf(r)}
 	statusAndBody := method.Func.Call(arguments)
 	status = int(statusAndBody[0].Int())
 	body = statusAndBody[1].Interface()

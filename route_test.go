@@ -11,12 +11,12 @@ func Test(t *testing.T) { TestingT(t) }
 type RouteSuite struct{}
 
 func (s *RouteSuite) SetUpTest(c *C) {
-	Register(&URLParamController{New()})
-	Register(&TellMethodNameController{New()})
+	Register(&URLParamController{})
+	Register(&TellMethodNameController{})
 }
 
 func (s *RouteSuite) TearDownTest(c *C) {
-	Clear()
+	clear()
 }
 
 var _ = Suite(&RouteSuite{})
@@ -206,7 +206,7 @@ func AclFilter(r *Request) (status int, body interface{}) {
 }
 
 func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
-	ctrl, _ := Get("urlparams")
+	ctrl, _ := getController("urlparams")
 	ctrl.Filter([]string{"update"}, AclFilter)
 	r := newRoute("urlparams")
 	r.buildPatterns("")
@@ -217,7 +217,7 @@ func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
 }
 
 func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
-	ctrl, _ := Get("urlparams")
+	ctrl, _ := getController("urlparams")
 	ctrl.Filter([]string{"update"}, AclFilter)
 	r := newRoute("urlparams")
 	r.buildPatterns("")
@@ -228,7 +228,7 @@ func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
 }
 
 func (s *RouteSuite) TestRespondContinuesAfterNilFilterReturn(c *C) {
-	ctrl, _ := Get("urlparams")
+	ctrl, _ := getController("urlparams")
 	ctrl.Filter([]string{"update"}, AclFilter)
 	r := newRoute("urlparams")
 	r.buildPatterns("")

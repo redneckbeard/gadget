@@ -2,16 +2,16 @@ package gadget
 
 import "fmt"
 
-func New() *DefaultController {
+func newController() *DefaultController {
 	controller := &DefaultController{}
 	controller.filters = make(map[string][]Filter)
-	controller.extraActions = make(map[string]string)
+	controller.extraActionMap = make(map[string]string)
 	return controller
 }
 
 type DefaultController struct {
-	filters      map[string][]Filter
-	extraActions map[string]string
+	filters        map[string][]Filter
+	extraActionMap map[string]string
 }
 
 type Filter func(*Request) (int, interface{})
@@ -36,7 +36,7 @@ func (c *DefaultController) Filter(verbs []string, filter Filter) {
 	}
 }
 
-func (c *DefaultController) RunFilters(r *Request, action string) (status int, body interface{}) {
+func (c *DefaultController) runFilters(r *Request, action string) (status int, body interface{}) {
 	for _, f := range c.filters[action] {
 		status, body = f(r)
 		if status == 0 {
@@ -46,12 +46,12 @@ func (c *DefaultController) RunFilters(r *Request, action string) (status int, b
 	return
 }
 
-func (c *DefaultController) ExtraActions() map[string]string {
-	return c.extraActions
+func (c *DefaultController) extraActions() map[string]string {
+	return c.extraActionMap
 }
 
-func (c *DefaultController) ExtraActionNames() (names []string) {
-	for k, _ := range c.extraActions {
+func (c *DefaultController) extraActionNames() (names []string) {
+	for k, _ := range c.extraActionMap {
 		names = append(names, k)
 	}
 	return
@@ -59,7 +59,7 @@ func (c *DefaultController) ExtraActionNames() (names []string) {
 
 func (c *DefaultController) setActions(actions [][]string) {
 	for _, action := range actions {
-		c.extraActions[action[0]] = action[1]
+		c.extraActionMap[action[0]] = action[1]
 		c.filters[action[0]] = []Filter{}
 	}
 	for _, action := range defaultActions {

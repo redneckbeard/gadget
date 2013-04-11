@@ -15,7 +15,7 @@ type Response struct {
 
 func NewResponse(body interface{}) *Response {
 	return &Response{
-		Body: body,
+		Body:    body,
 		Headers: make(http.Header),
 	}
 }

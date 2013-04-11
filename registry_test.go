@@ -7,9 +7,9 @@ import (
 type RegistrySuite struct{}
 
 func (s *RegistrySuite) SetUpSuite(c *C) {
-	Register(&FooController{New()})
-	Register(&BarController{New()})
-	Register(&BazController{New()})
+	Register(&FooController{})
+	Register(&BarController{})
+	Register(&BazController{})
 }
 
 var _ = Suite(&RegistrySuite{})
@@ -58,17 +58,17 @@ func (s *RegistrySuite) TestShouldReturnRouteTwoSubroutes(c *C) {
 	c.Assert(r.subroutes, HasLen, 2)
 }
 
-//* Calling Flatten on it should return a slice of 3 Routes
+//* Calling flatten on it should return a slice of 3 Routes
 func (s *RegistrySuite) TestCallingFlattenOnShouldReturnSlice3RoutesNested(c *C) {
 	r := Resource("foos", Resource("bars"), Resource("bazs"))
-	flattened := r.Flatten()
+	flattened := r.flatten()
 	c.Assert(flattened, HasLen, 3)
 }
 
 //* First route has indexPattern of ^foo$ and objectPattern of ^foo(?:/(?P<foo_id>\d+))?$
 func (s *RegistrySuite) TestFirstRouteHasIndexpatternFooAndObjectpatternFoopfoo_Idd(c *C) {
 	r := Resource("foos", Resource("bars"), Resource("bazs"))
-	first := r.Flatten()[0]
+	first := r.flatten()[0]
 	c.Assert(first.indexPattern.String(), Equals, `^foos$`)
 	c.Assert(first.objectPattern.String(), Equals, `^foos(?:/(?P<foo_id>\d+))?$`)
 }
@@ -76,7 +76,7 @@ func (s *RegistrySuite) TestFirstRouteHasIndexpatternFooAndObjectpatternFoopfoo_
 //* Second route has indexPattern of ^foo/(?P<foo_id>\d+)/bar$ and objectPattern of ^foo/(?<foo_id>\d+)/bar(?:/(?<bar_id>\d+))?$
 func (s *RegistrySuite) TestSecondRouteHasIndexpatternFoopfoo_IddbarAndObjectpatternFoofoo_Iddbarbar_Idd(c *C) {
 	r := Resource("foos", Resource("bars"), Resource("bazs"))
-	first := r.Flatten()[1]
+	first := r.flatten()[1]
 	c.Assert(first.indexPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars$`)
 	c.Assert(first.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars(?:/(?P<bar_id>\d+))?$`)
 }
@@ -84,7 +84,7 @@ func (s *RegistrySuite) TestSecondRouteHasIndexpatternFoopfoo_IddbarAndObjectpat
 //* Third route has indexPattern of ^foo/(?P<foo_id>\d+)/baz$ and objectPattern of ^foo/(?<foo_id>\d+)/baz(?:/(?<baz_id>\d+))?$
 func (s *RegistrySuite) TestThirdRouteHasIndexpatternFoopfoo_IddbazAndObjectpatternFoofoo_Iddbazbaz_Idd(c *C) {
 	r := Resource("foos", Resource("bars"), Resource("bazs"))
-	first := r.Flatten()[2]
+	first := r.flatten()[2]
 	c.Assert(first.indexPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bazs$`)
 	c.Assert(first.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bazs(?:/(?P<baz_id>\d+))?$`)
 }
@@ -98,17 +98,17 @@ func (s *RegistrySuite) TestShouldReturnRouteSubrouteSubroute(c *C) {
 	c.Assert(sub1.subroutes, HasLen, 1)
 }
 
-//* Calling Flatten on it should return a slice of 3 Routes
+//* Calling flatten on it should return a slice of 3 Routes
 func (s *RegistrySuite) TestCallingFlattenOnShouldReturnSlice3Routes(c *C) {
 	r := Resource("foos", Resource("bars", Resource("bazs")))
-	routes := r.Flatten()
+	routes := r.flatten()
 	c.Assert(routes, HasLen, 3)
 }
 
 //* Third route has indexPattern of ^foo/(?P<foo_id>\d+)/bar/(?P<bar_id>\d+)/baz$ and objectPattern of ^foo/(?<foo_id>\d+)/bar/(?P<bar_id>\d+)/baz(?:/(?<baz_id>\d+))?$
 func (s *RegistrySuite) TestThirdRouteHasIndexpatternFoopfoo_Iddbarpbar_IddbazAndObjectpatternFoofoo_Iddbarpbar_Iddbazbaz_Idd(c *C) {
 	r := Resource("foos", Resource("bars", Resource("bazs")))
-	route := r.Flatten()[2]
+	route := r.flatten()[2]
 	c.Assert(route.indexPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars/(?P<bar_id>\d+)/bazs$`)
 	c.Assert(route.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars/(?P<bar_id>\d+)/bazs(?:/(?P<baz_id>\d+))?$`)
 }
@@ -120,17 +120,17 @@ func (s *RegistrySuite) TestPrefixedShouldReturnRouteTwoSubroutes(c *C) {
 	c.Assert(r.subroutes, HasLen, 2)
 }
 
-//* calling Flatten should return a slice of 2 Routes
+//* calling flatten should return a slice of 2 Routes
 func (s *RegistrySuite) TestCallingFlattenShouldReturnSlice2Routes(c *C) {
 	r := Prefixed("foos", Resource("bars"), Resource("bazs"))
-	subroutes := r.Flatten()
+	subroutes := r.flatten()
 	c.Assert(subroutes, HasLen, 2)
 }
 
 //* First route has indexPattern of ^foo/bar$ and objectPattern of ^foo/bar(?:/(?P<bar_id>\d+))?$
 func (s *RegistrySuite) TestFirstRouteHasIndexpatternFoobarAndObjectpatternFoobarpbar_Idd(c *C) {
 	r := Prefixed("foo", Resource("bars"), Resource("bazs"))
-	subroute := r.Flatten()[0]
+	subroute := r.flatten()[0]
 	c.Assert(subroute.indexPattern.String(), Equals, `^foo/bars$`)
 	c.Assert(subroute.objectPattern.String(), Equals, `^foo/bars(?:/(?P<bar_id>\d+))?$`)
 }
@@ -138,7 +138,7 @@ func (s *RegistrySuite) TestFirstRouteHasIndexpatternFoobarAndObjectpatternFooba
 //* Second route has indexPattern of ^foo/baz$ and objectPattern of ^foo/baz(?:/(?P<baz_id>\d+))?$
 func (s *RegistrySuite) TestSecondRouteHasIndexpatternFoobazAndObjectpatternFoobazpbaz_Idd(c *C) {
 	r := Prefixed("foo", Resource("bars"), Resource("bazs"))
-	subroute := r.Flatten()[1]
+	subroute := r.flatten()[1]
 	c.Assert(subroute.indexPattern.String(), Equals, `^foo/bazs$`)
 	c.Assert(subroute.objectPattern.String(), Equals, `^foo/bazs(?:/(?P<baz_id>\d+))?$`)
 }

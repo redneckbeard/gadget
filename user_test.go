@@ -10,7 +10,7 @@ import (
 type UserSuite struct{}
 
 func (s *UserSuite) SetUpTest(c *C) {
-	Register(&AuthStatusController{New()})
+	Register(&AuthStatusController{})
 	Routes(Resource("authstatuss"))
 }
 

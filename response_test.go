@@ -14,19 +14,19 @@ type ResponseSuite struct{}
 var _ = Suite(&ResponseSuite{})
 
 func (s *ResponseSuite) SetUpSuite(c *C) {
-	Register(&ResponseController{New()})
-	Register(&ImplicitController{New()})
+	Register(&ResponseController{})
+	Register(&ImplicitController{})
 	processor.Define("application/json", processor.JsonProcessor)
 	Routes(Resource("responses"), Resource("implicits"))
 }
 func (s *ResponseSuite) TearDownSuite(c *C) {
-	Clear()
+	clear()
 }
 
 var cookie = &http.Cookie{
 	Name:    "foo",
 	Value:   "bar",
-	Expires: time.Now().Add(time.Duration(10*time.Hour)),
+	Expires: time.Now().Add(time.Duration(10 * time.Hour)),
 }
 
 type ResponseController struct {
@@ -34,7 +34,7 @@ type ResponseController struct {
 }
 
 func (c *ResponseController) Index(*Request) (int, interface{}) {
-	body := struct{Foo, Bar string}{"baz", "quux"}
+	body := struct{ Foo, Bar string }{"baz", "quux"}
 	response := NewResponse(body)
 	response.Headers.Set("X-Framework", "Gadget")
 	return 200, response
@@ -51,7 +51,7 @@ type ImplicitController struct {
 }
 
 func (c *ImplicitController) Index(*Request) (int, interface{}) {
-	body := struct{Foo, Bar string}{"baz", "quux"}
+	body := struct{ Foo, Bar string }{"baz", "quux"}
 	return 200, body
 }
 
