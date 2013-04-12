@@ -76,7 +76,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 			matched  *route
 			response *Response
 		)
-		req := NewRequest(r)
+		req := newRequest(r)
 		for _, route := range routes {
 			if route.Match(req) != nil {
 				matched = route
@@ -88,7 +88,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 						final = body.(string)
 					}
 					http.Redirect(w, r, final, status)
-					req.Log(status, len(final))
+					req.log(status, len(final))
 					return
 				}
 				break
@@ -115,9 +115,9 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 		status, final, mime, _ := processor.Process(status, response.Body, contentType, routeData)
 
 		response.status = status
-		response.Final = final
+		response.final = final
 		response.Headers.Set("Content-Type", mime)
 		response.write(w)
-		req.Log(status, len(response.Final))
+		req.log(status, len(response.final))
 	}
 }

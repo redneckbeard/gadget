@@ -2,7 +2,6 @@ package gadget
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/redneckbeard/gadget/env"
 	"io/ioutil"
@@ -11,6 +10,12 @@ import (
 	"time"
 )
 
+// Request wraps an *http.Request and adds some Gadget-derived conveniences. The
+// Params map contains either POST data, GET query parameters, or the body of the
+// request deserialized as JSON if the request sends an Accept header of
+// application/json. The UrlParams map contains any resource ids plucked from the
+// URL by the router. The User is either an AnonymousUser or an object returned by
+// the UserIdentifier that the application as registered with IdentifyUsersWith.
 type Request struct {
 	*http.Request
 	Path      string
@@ -20,7 +25,7 @@ type Request struct {
 	User      User
 }
 
-func NewRequest(raw *http.Request) *Request {
+func newRequest(raw *http.Request) *Request {
 	r := &Request{Request: raw, Path: raw.URL.Path[1:], Method: raw.Method}
 	r.setParams()
 	return r
@@ -76,9 +81,6 @@ func (r *Request) setParams() {
 }
 
 func (r *Request) setUser() error {
-	if r.UrlParams == nil {
-		return errors.New("UrlParams must be set prior to user identification")
-	}
 	if identifyUser != nil {
 		r.User = identifyUser(r)
 	} else {
@@ -87,7 +89,7 @@ func (r *Request) setUser() error {
 	return nil
 }
 
-func (r *Request) Log(status, contentLength int) {
+func (r *Request) log(status, contentLength int) {
 	raw := r.Request
 	env.Log(fmt.Sprintf(`[%s] "%s %s %s" %d %d`, time.Now().Format(time.RFC822), r.Method, raw.URL.Path, raw.Proto, status, contentLength))
 }
