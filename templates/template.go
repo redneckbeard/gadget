@@ -3,7 +3,7 @@ package templates
 import (
 	"bytes"
 	"github.com/redneckbeard/gadget/env"
-	"github.com/redneckbeard/gadget/processor"
+	"github.com/redneckbeard/gadget"
 	"html/template"
 	"strconv"
 )
@@ -19,7 +19,7 @@ func templatePath(components ...string) string {
 	return env.AbsPath(append([]string{"templates"}, components...)...)
 }
 
-func TemplateProcessor(status int, body interface{}, data *processor.RouteData) (int, string) {
+func TemplateBroker(status int, body interface{}, data *gadget.RouteData) (int, string) {
 	t, err := template.ParseFiles(templatePath("base"))
 	if err != nil {
 		return 404, err.Error()

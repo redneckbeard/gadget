@@ -42,7 +42,7 @@ var (
 // Each of these methods takes a *gadget.Request as its only argument and returns
 // an HTTP status code as an int and an interface{} value as the body. The
 // interface{} value is then cast to a string, serialized, used as a template
-// context, etc. according to the applications configuration of gadget/processor. 
+// context, etc. according to the application's broker configuration. 
 // 
 // Any other exported method with a signature of (*gadget.Request) (int,
 // interface{}) will also be routable. For example, if the controller mounted

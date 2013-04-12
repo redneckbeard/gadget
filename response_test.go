@@ -1,7 +1,6 @@
 package gadget
 
 import (
-	"github.com/redneckbeard/gadget/processor"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"net/http"
@@ -16,7 +15,7 @@ var _ = Suite(&ResponseSuite{})
 func (s *ResponseSuite) SetUpSuite(c *C) {
 	Register(&ResponseController{})
 	Register(&ImplicitController{})
-	processor.Define("application/json", processor.JsonProcessor)
+	Accept("application/json").Via(JsonBroker)
 	Routes(Resource("responses"), Resource("implicits"))
 }
 func (s *ResponseSuite) TearDownSuite(c *C) {

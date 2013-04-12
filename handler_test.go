@@ -3,7 +3,6 @@ package gadget
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/redneckbeard/gadget/processor"
 	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"net/http"
@@ -17,7 +16,7 @@ func (s *HandlerSuite) SetUpSuite(c *C) {
 	Register(&MapController{})
 	Register(&ResourceController{})
 	Register(&UuidController{})
-	processor.Define("application/json", processor.JsonProcessor)
+	Accept("application/json").Via(JsonBroker)
 	Routes(SetIndex("maps"), Resource("resources"), Resource("uuids"))
 }
 func (s *HandlerSuite) TearDownSuite(c *C) {

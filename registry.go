@@ -2,7 +2,6 @@ package gadget
 
 import (
 	"fmt"
-	"github.com/redneckbeard/gadget/processor"
 	"net/http"
 	"os"
 	"reflect"
@@ -94,7 +93,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-		routeData := &processor.RouteData{
+		routeData := &RouteData{
 			Action: action,
 			Verb:   r.Method,
 		}
@@ -112,7 +111,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 			response = NewResponse(body)
 		}
 
-		status, final, mime, _ := processor.Process(status, response.Body, contentType, routeData)
+		status, final, mime, _ := Process(status, response.Body, contentType, routeData)
 
 		response.status = status
 		response.final = final

@@ -1,16 +1,13 @@
-package processor
+package gadget
 
 import (
 	. "launchpad.net/gocheck"
-	"testing"
 )
-
-func Test(t *testing.T) { TestingT(t) }
 
 type ProcessSuite struct{}
 
 func (s *ProcessSuite) TearDownTest(c *C) {
-	clear()
+	clearBrokers()
 }
 
 var _ = Suite(&ProcessSuite{})
@@ -25,7 +22,7 @@ func (s *ProcessSuite) TestCallingProcesstexthtml200HtmlhtmlShouldReturn200Htmlh
 }
 
 //Calling `Process(200, []string{"foo", "bar", "baz"}, "application/json")` should return 200, "[foo bar baz]", false if there is no JSON processor
-func (s *ProcessSuite) TestCallingProcessapplicationjson200StringfooBarBazShouldReturn200FooBarBazFalseThereIsNoJsonProcessor(c *C) {
+func (s *ProcessSuite) TestCallingProcessapplicationjson200StringfooBarBazShouldReturn200FooBarBazFalseThereIsNoJsonBroker(c *C) {
 	status, body, matched, changed := Process(200, []string{"foo", "bar", "baz"}, "application/json", &RouteData{})
 	c.Assert(status, Equals, 200)
 	c.Assert(body, Equals, "[foo bar baz]")
@@ -34,8 +31,8 @@ func (s *ProcessSuite) TestCallingProcessapplicationjson200StringfooBarBazShould
 }
 
 //Calling `Process(200, "hi there", "application/json")` should encode the string as a JSON value if there is a JSON processor
-func (s *ProcessSuite) TestCallingProcessapplicationjson200HiThereShouldReturn200HiThereFalseThereIsNoJsonProcessor(c *C) {
-	Define("application/json", JsonProcessor)
+func (s *ProcessSuite) TestCallingProcessapplicationjson200HiThereShouldReturn200HiThereFalseThereIsNoJsonBroker(c *C) {
+	Accept("application/json").Via(JsonBroker)
 	status, body, matched, changed := Process(200, "hi there", "application/json", &RouteData{})
 	c.Assert(status, Equals, 200)
 	c.Assert(body, Equals, `"hi there"`)
@@ -44,8 +41,8 @@ func (s *ProcessSuite) TestCallingProcessapplicationjson200HiThereShouldReturn20
 }
 
 //Calling `Process("application/json", 200, []string{"foo", "bar", "baz"})` should return 200, '["foo", "bar", "baz"]', true when there is a JSON processor
-func (s *ProcessSuite) TestCallingProcessapplicationjson200StringfooBarBazShouldReturn200FooBarBazTrueWhenThereIsJsonProcessor(c *C) {
-	Define("application/json", JsonProcessor)
+func (s *ProcessSuite) TestCallingProcessapplicationjson200StringfooBarBazShouldReturn200FooBarBazTrueWhenThereIsJsonBroker(c *C) {
+	Accept("application/json").Via(JsonBroker)
 	status, body, matched, changed := Process(200, []string{"foo", "bar", "baz"}, "application/json", &RouteData{})
 	c.Assert(status, Equals, 200)
 	c.Assert(body, Equals, `["foo","bar","baz"]`)
@@ -55,8 +52,8 @@ func (s *ProcessSuite) TestCallingProcessapplicationjson200StringfooBarBazShould
 
 //Calling `Process` with a function for the body value should return 500, "", true
 func (s *ProcessSuite) TestCallingProcessAnonymousFunctionForBodyValueShouldReturn500True(c *C) {
-	Define("application/json", JsonProcessor)
-	status, body, matched, changed := Process(200, JsonProcessor, "application/json", &RouteData{})
+	Accept("application/json").Via(JsonBroker)
+	status, body, matched, changed := Process(200, JsonBroker, "application/json", &RouteData{})
 	c.Assert(status, Equals, 500)
 	c.Assert(body, Equals, "")
 	c.Assert(matched, Equals, "application/json")

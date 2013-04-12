@@ -1,4 +1,4 @@
-package processor
+package gadget
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"github.com/redneckbeard/gadget/env"
 )
 
-func JsonProcessor(status int, body interface{}, data *RouteData) (int, string) {
+func JsonBroker(status int, body interface{}, data *RouteData) (int, string) {
 	var (
 		serialized []byte
 		err error
@@ -22,7 +22,7 @@ func JsonProcessor(status int, body interface{}, data *RouteData) (int, string) 
 	return status, string(serialized)
 }
 
-func XmlProcessor(status int, body interface{}, data *RouteData) (int, string) {
+func XmlBroker(status int, body interface{}, data *RouteData) (int, string) {
 	var (
 		serialized []byte
 		err error
