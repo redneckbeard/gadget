@@ -59,7 +59,7 @@ func (r *Request) setParams() {
 			if err != nil {
 				return
 			}
-			err = json.Unmarshal(raw, params)
+			err = json.Unmarshal(raw, &params)
 			if err != nil {
 				return
 			}

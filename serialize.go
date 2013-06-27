@@ -9,7 +9,7 @@ import (
 func JsonBroker(status int, body interface{}, data *RouteData) (int, string) {
 	var (
 		serialized []byte
-		err error
+		err        error
 	)
 	if env.Debug {
 		serialized, err = json.MarshalIndent(body, "", "  ")
@@ -25,7 +25,7 @@ func JsonBroker(status int, body interface{}, data *RouteData) (int, string) {
 func XmlBroker(status int, body interface{}, data *RouteData) (int, string) {
 	var (
 		serialized []byte
-		err error
+		err        error
 	)
 	if env.Debug {
 		serialized, err = xml.MarshalIndent(body, "", "  ")

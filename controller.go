@@ -81,7 +81,7 @@ func nameOf(c Controller) string {
 	if matches == nil || len(matches) != 2 {
 		panic(`Controller names must adhere to the convention of '<name>Controller'`)
 	}
-	return strings.ToLower(matches[1])
+	return strings.ToLower(hyphenate(matches[1]))
 }
 
 func pluralOf(c Controller) string {

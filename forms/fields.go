@@ -26,6 +26,7 @@ import (
 type FormField interface {
 	Clean()
 	Copy(reflect.Value)
+	canCopy() bool
 	DefaultMessages()
 	Error() error
 	GetMessage(string) string
@@ -37,11 +38,11 @@ type FormField interface {
 }
 
 type BaseField struct {
-	err      error
-	Data     interface{}
-	Messages map[string]string
-	Required bool
-
+	err         error
+	Data        interface{}
+	Messages    map[string]string
+	Required    bool
+	Placeholder bool
 }
 
 func newBaseField() *BaseField {
@@ -55,6 +56,10 @@ func (field *BaseField) isNil() bool {
 
 func (field *BaseField) isRequired() bool {
 	return field.Required
+}
+
+func (field *BaseField) canCopy() bool {
+	return !field.Placeholder
 }
 
 func (field *BaseField) Set(data interface{}) {
@@ -106,20 +111,27 @@ func (field *StringField) DefaultMessages() {
 // FormField is string, its Clean method will attempt to parse it.
 type IntField struct {
 	*BaseField
-	Value int
+	Value int64
 }
 
 func (field *IntField) Clean() {
 	switch field.Data.(type) {
-	case int:
-		field.Value = field.Data.(int)
+	case int64:
+		field.Value = field.Data.(int64)
+	case float64:
+		n := field.Data.(float64)
+		if n - float64(int(n)) == 0.0 {
+			field.Value = int64(n)
+		} else {
+			field.SetError(field.GetMessage("type"))
+		}
 	case string:
 		intString := field.Data.(string)
 		i, err := strconv.ParseInt(intString, 10, 0)
 		if err != nil {
 			field.SetError(field.GetMessage("type"))
 		} else {
-			field.Value = int(i)
+			field.Value = i
 		}
 	default:
 		field.SetError(field.GetMessage("type"))
@@ -132,6 +144,53 @@ func (field *IntField) Copy(v reflect.Value) {
 
 func (field *IntField) DefaultMessages() {
 	field.SetMessage("type", "An integer value is required")
+}
+
+type IntSliceField struct {
+	*BaseField
+	Value []int64
+}
+
+func (field *IntSliceField) Clean() {
+	fmt.Println(field.Data)
+	switch field.Data.(type) {
+	case int64:
+		field.Value = []int64{field.Data.(int64)}
+	case string:
+		s := field.Data.(string)
+		i, err := strconv.ParseInt(s, 10, 0)
+		if err != nil {
+			field.SetError(field.GetMessage("type"))
+			return
+		} else {
+			field.Value = []int64{i}
+		}
+	case []int64:
+		field.Value = field.Data.([]int64)
+	case []string:
+		intStrings := field.Data.([]string)
+		ints := []int64{}
+		for _, s := range intStrings {
+			i, err := strconv.ParseInt(s, 10, 0)
+			if err != nil {
+				field.SetError(field.GetMessage("type"))
+				return
+			} else {
+				ints = append(ints, i)
+			}
+		}
+		field.Value = ints
+	default:
+		field.SetError(field.GetMessage("type"))
+	}
+}
+
+func (field *IntSliceField) Copy(v reflect.Value) {
+	v.Set(reflect.ValueOf(field.Value))
+}
+
+func (field *IntSliceField) DefaultMessages() {
+	field.SetMessage("type", "An array of integers is required")
 }
 
 // Float64Field validates the presence of a float64 value. If the Data on the

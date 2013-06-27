@@ -30,7 +30,7 @@ func (rte *route) buildPatterns(prefix string) {
 	} else {
 		basePattern := prefix + rte.segment
 		rte.indexPattern = regexp.MustCompile("^" + basePattern + "$")
-		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, nameOf(rte.controller), rte.controller.IdPattern())
+		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, strings.Replace(nameOf(rte.controller), "-", "_", -1), rte.controller.IdPattern())
 		rte.objectPattern = regexp.MustCompile(patternWithId)
 		actions := rte.controller.extraActionNames()
 		if len(actions) > 0 {

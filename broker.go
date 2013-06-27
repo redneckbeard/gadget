@@ -16,7 +16,7 @@ type RouteData struct {
 var brokers = make(map[string]Broker)
 
 type contentType struct {
-	mime string	
+	mime string
 }
 
 func (ct *contentType) Via(broker Broker) {
@@ -35,8 +35,8 @@ func clearBrokers() {
 
 func Process(status int, body interface{}, mimetype string, data *RouteData) (int, string, string, bool) {
 	var (
-		broker Broker
-		matched   string
+		broker  Broker
+		matched string
 	)
 	for _, mt := range strings.Split(mimetype, ",") {
 		_, ok := brokers[mt]

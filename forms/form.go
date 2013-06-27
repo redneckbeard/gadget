@@ -66,7 +66,9 @@ func Init(form Form, initializer func(Form)) {
 			newField.Elem().FieldByName("BaseField").Set(base)
 
 			fv.Set(newField)
-			fieldMap[ft.Name] = fv.Interface().(FormField)
+			formField := fv.Interface().(FormField)
+			formField.DefaultMessages()
+			fieldMap[ft.Name] = formField
 		}
 	}
 	if initializer != nil {
@@ -143,14 +145,16 @@ func Copy(f Form, target interface{}) error {
 	}
 	structValue := reflect.ValueOf(target).Elem()
 	for name, field := range f.fieldMap() {
-		targetField := structValue.FieldByName(name)
-		if !targetField.IsValid() {
-			return errors.New(fmt.Sprintf(`No "%s" field found on %v struct`, name, reflect.TypeOf(target).Elem()))
+		if field.canCopy() {
+			targetField := structValue.FieldByName(name)
+			if !targetField.IsValid() {
+				return errors.New(fmt.Sprintf(`No "%s" field found on %v struct`, name, reflect.TypeOf(target).Elem()))
+			}
+			if !targetField.CanSet() {
+				return errors.New(`Cannot set value on "%s" field`)
+			}
+			field.Copy(targetField)
 		}
-		if !targetField.CanSet() {
-			return errors.New(`Cannot set value on "%s" field`)
-		}
-		field.Copy(targetField)
 	}
 	return nil
 }
