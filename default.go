@@ -13,11 +13,11 @@ func newController() *DefaultController {
 // includes unexported methods, must be embedded in any other type that implements
 // Controller. The fallback implementations provided by DefaultController and the
 // interactions of other Gadget machinery therewith can be summarized as follows:
-// 
-// 	* Index, Show, Create, Update, and Destroy methods all return a 404 with 
+//
+// 	* Index, Show, Create, Update, and Destroy methods all return a 404 with
 // 	  an empty string for the body
 // 	* The return value of IdPattern for use in routes is `\d+`
-// 	* The return value of Plural is "", which Register takes to mean "just 
+// 	* The return value of Plural is "", which Register takes to mean "just
 // 	  add an 's'"
 type DefaultController struct {
 	filters        map[string][]Filter
@@ -70,6 +70,9 @@ func (c *DefaultController) Plural() string { return "" }
 // 	}
 // 	gadget.Register(c)
 func (c *DefaultController) Filter(verbs []string, filter Filter) {
+	if c.filters == nil {
+		panic("Calls to Filter must be made after a controller is registered")
+	}
 	for _, verb := range verbs {
 		if filters, ok := c.filters[verb]; !ok {
 			panic(fmt.Sprintf("Unable to add filter for '%s' -- no such action", verb))

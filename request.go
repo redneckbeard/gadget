@@ -61,6 +61,7 @@ func (r *Request) setParams() {
 			}
 			err = json.Unmarshal(raw, &params)
 			if err != nil {
+				env.Log("Unable to deserialize JSON payload: ", err, string(raw))
 				return
 			}
 		}

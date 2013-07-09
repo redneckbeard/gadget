@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	root, staticPrefix, logFilePath string
+	root, staticPrefix, logFilePath, Port string
 	logger                          *log.Logger
 	Debug                           bool
 )
@@ -20,6 +20,7 @@ func Configure() error {
 	flag.StringVar(&staticPrefix, "static", "/static/", "URL prefix for serving the 'static' directory")
 	flag.StringVar(&root, "root", "", "Directory that contains uncompiled application assets")
 	flag.StringVar(&logFilePath, "log", "", "Path to log file")
+	flag.StringVar(&Port, "port", "8090", "Port on which the application will listen")
 	flag.BoolVar(&Debug, "debug", true, "Sets the env.Debug value within Gadget")
 	flag.Parse()
 	if root == "" {

@@ -11,7 +11,7 @@ type UserSuite struct{}
 
 func (s *UserSuite) SetUpTest(c *C) {
 	Register(&AuthStatusController{})
-	Routes(Resource("authstatuss"))
+	Routes(Resource("auth-status"))
 }
 
 func (s *UserSuite) TearDownTest(c *C) {
@@ -23,6 +23,8 @@ var _ = Suite(&UserSuite{})
 type AuthStatusController struct {
 	*DefaultController
 }
+
+func (c *AuthStatusController) Plural() string { return "auth-status" }
 
 func (c *AuthStatusController) Index(r *Request) (int, interface{}) {
 	return 200, r.User.Authenticated()
@@ -45,7 +47,7 @@ func FakeAuth(r *Request) User {
 func (s *UserSuite) TestUserAttachedToRequestAuthenticatedNoUseridentifierHasBeenRegistered(c *C) {
 	handler := Handler()
 
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/authstatuss", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/auth-status", nil)
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	body, err := ioutil.ReadAll(resp.Body)
@@ -58,7 +60,7 @@ func (s *UserSuite) TestUserAttachedToRequestAuthenticatedRegisteredUseridentifi
 	handler := Handler()
 
 	IdentifyUsersWith(FakeAuth)
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/authstatuss", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/auth-status", nil)
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	body, err := ioutil.ReadAll(resp.Body)
@@ -71,7 +73,7 @@ func (s *UserSuite) TestUserAttachedToRequestAuthenticatedRegisteredUseridentifi
 	handler := Handler()
 
 	IdentifyUsersWith(FakeAuth)
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/authstatuss?authed=yes", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/auth-status?authed=yes", nil)
 	resp := httptest.NewRecorder()
 	handler(resp, req)
 	body, err := ioutil.ReadAll(resp.Body)

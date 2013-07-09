@@ -51,9 +51,9 @@ func (c *TellMethodNameController) Arbitrary(r *Request) (int, interface{}) {
 
 //Route.Respond calls a controller's Index method on a GET request that matches the indexPattern
 func (s *RouteSuite) TestRouterespondCallsControllersIndexMethodOnGetRequestThatMatchesIndexpattern(c *C) {
-	r := newRoute("tellmethodnames")
+	r := newRoute("tell-method-names")
 	r.buildPatterns("")
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tellmethodnames", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tell-method-names", nil)
 	status, body, action := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 200)
 	c.Assert(body.(string), Equals, "index")
@@ -62,9 +62,9 @@ func (s *RouteSuite) TestRouterespondCallsControllersIndexMethodOnGetRequestThat
 
 //Route.Respond calls a controller's Show method on a GET request that matches the objectPattern
 func (s *RouteSuite) TestRouterespondCallsControllersShowMethodOnGetRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tellmethodnames")
+	r := newRoute("tell-method-names")
 	r.buildPatterns("")
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tellmethodnames/1", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tell-method-names/1", nil)
 	status, body, action := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 200)
 	c.Assert(body.(string), Equals, "show")
@@ -73,9 +73,9 @@ func (s *RouteSuite) TestRouterespondCallsControllersShowMethodOnGetRequestThatM
 
 //Route.Respond 404s on a POST request that matches its controller's objectPattern
 func (s *RouteSuite) TestRouterespond404SOnPostRequestThatMatchesItsControllersIndexpattern(c *C) {
-	r := newRoute("tellmethodnames")
+	r := newRoute("tell-method-names")
 	r.buildPatterns("")
-	req, _ := http.NewRequest("POST", "http://127.0.0.1:8000/tellmethodnames/1", nil)
+	req, _ := http.NewRequest("POST", "http://127.0.0.1:8000/tell-method-names/1", nil)
 	status, body, action := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 404)
 	c.Assert(body.(string), Equals, "")
@@ -84,9 +84,9 @@ func (s *RouteSuite) TestRouterespond404SOnPostRequestThatMatchesItsControllersI
 
 //Route.Respond calls a controller's Create method on a POST request that matches the indexPattern
 func (s *RouteSuite) TestRouterespondCallsControllersCreateMethodOnPostRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tellmethodnames")
+	r := newRoute("tell-method-names")
 	r.buildPatterns("")
-	req, _ := http.NewRequest("POST", "http://127.0.0.1:8000/tellmethodnames", nil)
+	req, _ := http.NewRequest("POST", "http://127.0.0.1:8000/tell-method-names", nil)
 	status, body, action := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 200)
 	c.Assert(body.(string), Equals, "create")
@@ -95,9 +95,9 @@ func (s *RouteSuite) TestRouterespondCallsControllersCreateMethodOnPostRequestTh
 
 //Route.Respond 404s on a PUT request that matches its controller's indexPattern
 func (s *RouteSuite) TestRouterespond404SOnPutRequestThatMatchesItsControllersIndexpattern(c *C) {
-	r := newRoute("tellmethodnames")
+	r := newRoute("tell-method-names")
 	r.buildPatterns("")
-	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/tellmethodnames", nil)
+	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/tell-method-names", nil)
 	status, body, action := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 404)
 	c.Assert(body.(string), Equals, "")
@@ -106,9 +106,9 @@ func (s *RouteSuite) TestRouterespond404SOnPutRequestThatMatchesItsControllersIn
 
 //Route.Respond calls a controller's Update method on a PUT request that matches the objectPattern
 func (s *RouteSuite) TestRouterespondCallsControllersUpdateMethodOnPutRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tellmethodnames")
+	r := newRoute("tell-method-names")
 	r.buildPatterns("")
-	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/tellmethodnames/1", nil)
+	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/tell-method-names/1", nil)
 	status, body, action := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 200)
 	c.Assert(body.(string), Equals, "update")
@@ -117,9 +117,9 @@ func (s *RouteSuite) TestRouterespondCallsControllersUpdateMethodOnPutRequestTha
 
 //Route.Respond 404s on a DELETE request that matches its controller's indexPattern
 func (s *RouteSuite) TestRouterespond404SOnDeleteRequestThatMatchesItsControllersIndexpattern(c *C) {
-	r := newRoute("tellmethodnames")
+	r := newRoute("tell-method-names")
 	r.buildPatterns("")
-	req, _ := http.NewRequest("DELETE", "http://127.0.0.1:8000/tellmethodnames", nil)
+	req, _ := http.NewRequest("DELETE", "http://127.0.0.1:8000/tell-method-names", nil)
 	status, body, action := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 404)
 	c.Assert(body.(string), Equals, "")
@@ -128,20 +128,20 @@ func (s *RouteSuite) TestRouterespond404SOnDeleteRequestThatMatchesItsController
 
 //Route.Respond calls a controller's Destroy method on a DELETE request that matches the objectPattern
 func (s *RouteSuite) TestRouterespondCallsControllersDestroyMethodOnDeleteRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tellmethodnames")
+	r := newRoute("tell-method-names")
 	r.buildPatterns("")
-	req, _ := http.NewRequest("DELETE", "http://127.0.0.1:8000/tellmethodnames/1", nil)
+	req, _ := http.NewRequest("DELETE", "http://127.0.0.1:8000/tell-method-names/1", nil)
 	status, body, action := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 200)
 	c.Assert(body.(string), Equals, "destroy")
 	c.Assert(action, Equals, "destroy")
 }
 
-//Route.Respond should call an arbitrary exported method when a request path matches its name 
+//Route.Respond should call an arbitrary exported method when a request path matches its name
 func (s *RouteSuite) TestRouterespondCallsControllersArbitraryMethodOnDeleteRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tellmethodnames")
+	r := newRoute("tell-method-names")
 	r.buildPatterns("")
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tellmethodnames/arbitrary", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tell-method-names/arbitrary", nil)
 	status, body, action := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 200)
 	c.Assert(body.(string), Equals, "arbitrary")

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 )
 
 // Form is the interface that wraps the validation functionality provided by this
@@ -57,6 +59,7 @@ func Init(form Form, initializer func(Form)) {
 	fieldMap := defaultForm.Fields
 	for i := 0; i < t.NumField(); i++ {
 		ft := t.Field(i)
+		tags := ft.Tag
 		fv := v.Field(i)
 		if _, ok := fv.Interface().(FormField); ok {
 			// Initialize a BaseField
@@ -64,7 +67,20 @@ func Init(form Form, initializer func(Form)) {
 			// Initialize a struct of the correct FormField type
 			newField := reflect.New(fv.Type().Elem())
 			newField.Elem().FieldByName("BaseField").Set(base)
-
+			booleanTags := []string{"Required", "Placeholder"}
+			for _, fieldName := range booleanTags {
+				tagName := strings.ToLower(fieldName)
+				if tags.Get(tagName) != "" {
+					if tag, err := strconv.ParseBool(tags.Get(tagName)); err == nil {
+						tagField := newField.Elem().FieldByName(fieldName)
+						tagField.SetBool(tag)
+					}
+				}
+			}
+			if tags.Get("format") != "" {
+				formatField := newField.Elem().FieldByName("Format")
+				formatField.SetString(tags.Get("format"))
+			}
 			fv.Set(newField)
 			formField := fv.Interface().(FormField)
 			formField.DefaultMessages()
@@ -80,7 +96,7 @@ func Init(form Form, initializer func(Form)) {
 // of the corresponding FormFields of the Form. The keys of the map must be a
 // case-sensitive exact match of exported names of FormFields on the struct.
 // Populate will return an error if Init has not yet been called on the Form.
-// 
+//
 // Note that the type of the second argument is not map[string][]string. This is
 // meant to provide ease of use with gadget.Request.Params over http.Request.Form.
 func Populate(form Form, payload map[string]interface{}) error {
@@ -99,7 +115,7 @@ func Populate(form Form, payload map[string]interface{}) error {
 // non-nil. If false, error messages may be retrieved by the Error method of an
 // individual field or by retrieving the error for a field by name from the Form's
 // Errors map.
-// 
+//
 // If validation is needed beyond what a FormField type provides by default, Forms
 // may define special methods to perform more robust checks on the value of the
 // Data field. These methods are named "Clean<Fieldname>" and receive the field
@@ -135,7 +151,7 @@ func IsValid(f Form) bool {
 // processing (presumably persistance). The target struct must have a field of
 // the appropriate type and the same name for every FormField in the Form.
 //
-// 
+//
 // Copy will return an error if the Form has not passed validation, if it cannot
 // find a corresponding field on the target struct for a FormField, or if it
 // cannot set the FormField's value on the target field.

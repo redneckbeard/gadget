@@ -13,7 +13,7 @@ import (
 // BaseField, which provides all methods except Clean and Copy. Individual
 // field types must implement those methods appropriatly for the types of data
 // they are intended to validate.
-// 
+//
 // By virtue of their embedded BaseField, all FormFields have a Data field of
 // type interface{}. The FormFields themselves conventionally have a Value
 // field of the type that they purport to validate. All FormFields are required
@@ -152,7 +152,6 @@ type IntSliceField struct {
 }
 
 func (field *IntSliceField) Clean() {
-	fmt.Println(field.Data)
 	switch field.Data.(type) {
 	case int64:
 		field.Value = []int64{field.Data.(int64)}

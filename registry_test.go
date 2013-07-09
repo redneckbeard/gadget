@@ -33,7 +33,7 @@ func (s *RegistrySuite) TestRoutingindexfooShouldReturnRouteNoSubroutesAndIndexp
 	c.Assert(r.indexPattern.String(), Equals, `^$`)
 }
 
-//Resource("foo") should have no subroutes 
+//Resource("foo") should have no subroutes
 func (s *RegistrySuite) TestRoutingresourcefooHasNoSubroutesAndIndexpatternFoo(c *C) {
 	r := Resource("foos")
 	c.Assert(r.subroutes, HasLen, 0)

@@ -58,7 +58,7 @@ func (s *FieldSuite) TestIntfieldShouldSetIntAsValueWhenCleaningInt(c *C) {
 	field := &IntField{BaseField: newBaseField()}
 	field.Set(39)
 	field.Clean()
-	c.Assert(field.Error(), IsNil)
+	c.Assert(len(field.Error()) Equals, 0)
 	c.Assert(field.Value, Equals, 39)
 }
 

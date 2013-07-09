@@ -17,7 +17,7 @@ type Response struct {
 }
 
 // NewResponse returns a pointer to a Response with its Body and Headers values
-// initialized. 
+// initialized.
 func NewResponse(body interface{}) *Response {
 	return &Response{
 		Body:    body,

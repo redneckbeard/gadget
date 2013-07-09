@@ -32,24 +32,24 @@ var (
 // HTTP requests at a given URL with a particular HTTP verb. Controllers have five
 // primary methods for handling requests. For a Controller mounted at /foo,
 // requests are routed to methods as follows:
-// 
+//
 // 	GET 	/foo 			Index
 // 	POST 	/foo			Create
 // 	GET 	/foo/<idPattern> 	Show
 // 	PUT 	/foo/<idPattern>	Update
 // 	DELETE 	/foo/<idPattern> 	Destroy
-// 
+//
 // Each of these methods takes a *gadget.Request as its only argument and returns
 // an HTTP status code as an int and an interface{} value as the body. The
 // interface{} value is then cast to a string, serialized, used as a template
-// context, etc. according to the application's broker configuration. 
-// 
+// context, etc. according to the application's broker configuration.
+//
 // Any other exported method with a signature of (*gadget.Request) (int,
 // interface{}) will also be routable. For example, if the controller mounted
 // above at /foo defines a method AllTheThings(r *gadget.Request) (int,
 // interface{}), Gadget will route any request for /foo/all-the-things, regardless
 // of verb, to that method.
-// 
+//
 // Controller also requires two methods that enable users to customize routing
 // options to this controller, IdPattern and Plural.  The final exported method of
 // the Controller interface is Filter, which allows for abstracting common
@@ -97,7 +97,7 @@ func pluralOf(c Controller) string {
 // that embed DefaultController. It will panic if the name of the Controller is
 // not in the form <resource name>Controller or if a struct value is passed
 // instead of a pointer.
-// 
+//
 // Register makes naive assumptions about the name of your Controller; firstly,
 // that it is English; secondly that it is in singular number; and thirdly, that
 // it can be pluralized simply by appending the letter "s". Thus,

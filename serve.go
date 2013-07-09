@@ -15,7 +15,7 @@ func SetApp(g Gadget) {
 	app = g
 }
 
-func Go(port string) {
+func Go() {
 	if err := env.Configure(); err != nil {
 		panic(err)
 	}
@@ -27,5 +27,8 @@ func Go(port string) {
 	}
 	env.ServeStatic()
 	http.HandleFunc("/", Handler())
-	http.ListenAndServe(":"+port, nil)
+	err := http.ListenAndServe(":"+env.Port, nil)
+	if err != nil {
+		panic(err)
+	}
 }

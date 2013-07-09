@@ -41,7 +41,7 @@ func SetIndex(controllerName string) *route {
 }
 
 // Resource creates a route to the specified controller and optionally creates
-// additional routes nested under it. 
+// additional routes nested under it.
 func Resource(controllerName string, nested ...*route) *route {
 	route := newRoute(controllerName)
 	route.subroutes = nested
