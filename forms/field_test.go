@@ -42,7 +42,7 @@ func (s *FieldSuite) TestIntfieldShouldSetIntAsValueWhenCleaningStringThatCanBeC
 	field.Set("39")
 	field.Clean()
 	c.Assert(field.Error(), IsNil)
-	c.Assert(field.Value, Equals, 39)
+	c.Assert(field.Value, Equals, int64(39))
 }
 
 //An IntField should return an error when cleaning a float
@@ -58,8 +58,8 @@ func (s *FieldSuite) TestIntfieldShouldSetIntAsValueWhenCleaningInt(c *C) {
 	field := &IntField{BaseField: newBaseField()}
 	field.Set(39)
 	field.Clean()
-	c.Assert(len(field.Error()) Equals, 0)
-	c.Assert(field.Value, Equals, 39)
+	c.Assert(field.Error(), IsNil)
+	c.Assert(field.Value, Equals, int64(39))
 }
 
 //A Float64Field should return an error when cleaning a string

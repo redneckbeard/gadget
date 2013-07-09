@@ -116,8 +116,8 @@ type IntField struct {
 
 func (field *IntField) Clean() {
 	switch field.Data.(type) {
-	case int64:
-		field.Value = field.Data.(int64)
+	case int, int64:
+		field.Value = int64(field.Data.(int))
 	case float64:
 		n := field.Data.(float64)
 		if n - float64(int(n)) == 0.0 {
