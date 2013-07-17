@@ -14,9 +14,17 @@ var (
 	root, staticPrefix, logFilePath, Port string
 	logger                          *log.Logger
 	Debug                           bool
+	configured bool
 )
 
+func init() {
+	Configure()
+}
+
 func Configure() error {
+	if configured {
+		return nil
+	}
 	flag.StringVar(&staticPrefix, "static", "/static/", "URL prefix for serving the 'static' directory")
 	flag.StringVar(&root, "root", "", "Directory that contains uncompiled application assets")
 	flag.StringVar(&logFilePath, "log", "", "Path to log file")
@@ -46,6 +54,7 @@ func Configure() error {
 		writer = os.Stdout
 	}
 	logger = log.New(writer, "gdgt| ", 0)
+	configured = true
 	return nil
 }
 
