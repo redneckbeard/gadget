@@ -6,7 +6,7 @@ import (
 	"github.com/redneckbeard/gadget/env"
 )
 
-func JsonBroker(status int, body interface{}, data *RouteData) (int, string) {
+func JsonBroker(r *Request, status int, body interface{}, data *RouteData) (int, string) {
 	var (
 		serialized []byte
 		err        error
@@ -22,7 +22,7 @@ func JsonBroker(status int, body interface{}, data *RouteData) (int, string) {
 	return status, string(serialized)
 }
 
-func XmlBroker(status int, body interface{}, data *RouteData) (int, string) {
+func XmlBroker(r *Request, status int, body interface{}, data *RouteData) (int, string) {
 	var (
 		serialized []byte
 		err        error

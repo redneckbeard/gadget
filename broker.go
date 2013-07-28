@@ -7,7 +7,7 @@ import (
 )
 
 // Broker functions transform an interface{} value into a string for the body of a response
-type Broker func(int, interface{}, *RouteData) (int, string)
+type Broker func(*Request, int, interface{}, *RouteData) (int, string)
 
 type RouteData struct {
 	ControllerName, Action, Verb string
@@ -33,7 +33,7 @@ func clearBrokers() {
 	}
 }
 
-func Process(status int, body interface{}, mimetype string, data *RouteData) (int, string, string, bool) {
+func Process(r *Request, status int, body interface{}, mimetype string, data *RouteData) (int, string, string, bool) {
 	var (
 		broker  Broker
 		matched string
@@ -54,6 +54,6 @@ func Process(status int, body interface{}, mimetype string, data *RouteData) (in
 		sniffed := http.DetectContentType([]byte(bodyContent))
 		return status, bodyContent, sniffed, false
 	}
-	status, processed := broker(status, body, data)
+	status, processed := broker(r, status, body, data)
 	return status, processed, matched, true
 }

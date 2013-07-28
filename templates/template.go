@@ -2,16 +2,16 @@ package templates
 
 import (
 	"bytes"
-	"github.com/redneckbeard/gadget/env"
 	"github.com/redneckbeard/gadget"
+	"github.com/redneckbeard/gadget/env"
 	"html/template"
 	"strconv"
 )
 
-var helpers = make(template.FuncMap)
+var registry = make(template.FuncMap)
 
 func AddHelper(name string, f interface{}) {
-	helpers[name] = f
+	registry[name] = f
 }
 
 func templatePath(components ...string) string {
@@ -19,7 +19,13 @@ func templatePath(components ...string) string {
 	return env.AbsPath(append([]string{"templates"}, components...)...)
 }
 
-func TemplateBroker(status int, body interface{}, data *gadget.RouteData) (int, string) {
+func TemplateBroker(r *gadget.Request, status int, body interface{}, data *gadget.RouteData) (int, string) {
+	helpers := template.FuncMap{
+		"request": func() *gadget.Request { return r },
+	}
+	for name, helper := range registry {
+		helpers[name] = helper
+	}
 	t, err := template.New("base.html").Funcs(helpers).ParseFiles(templatePath("base"))
 	if err != nil {
 		return 404, err.Error()

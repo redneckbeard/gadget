@@ -107,11 +107,14 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 
 		if resp, ok := body.(*Response); ok {
 			response = resp
+			if ct := response.Headers.Get("Content-Type"); ct != contentType {
+				contentType = ct
+			}
 		} else {
 			response = NewResponse(body)
 		}
 
-		status, final, mime, _ := Process(status, response.Body, contentType, routeData)
+		status, final, mime, _ := Process(req, status, response.Body, contentType, routeData)
 
 		response.status = status
 		response.final = final
