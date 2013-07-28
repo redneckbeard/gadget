@@ -20,11 +20,10 @@ func templatePath(components ...string) string {
 }
 
 func TemplateBroker(status int, body interface{}, data *gadget.RouteData) (int, string) {
-	t, err := template.ParseFiles(templatePath("base"))
+	t, err := template.New("base.html").Funcs(helpers).ParseFiles(templatePath("base"))
 	if err != nil {
 		return 404, err.Error()
 	}
-	t = t.Funcs(helpers)
 	var mainTemplatePath string
 	if status == 200 {
 		mainTemplatePath = templatePath(data.ControllerName, data.Action)
