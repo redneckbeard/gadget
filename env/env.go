@@ -1,8 +1,8 @@
 package env
 
 import (
-	"errors"
 	"flag"
+	"github.com/redneckbeard/gadget/cmd"
 	"io"
 	"log"
 	"net/http"
@@ -12,33 +12,37 @@ import (
 
 var (
 	root, staticPrefix, logFilePath, Port string
-	logger                          *log.Logger
-	Debug                           bool
-	configured bool
+	logger                                *log.Logger
+	Debug                                 bool
+	Handler                               http.HandlerFunc
+	configured                            bool
 )
 
 func init() {
-	Configure()
+	cmd.Add("serve", &Serve{FlagSet: &flag.FlagSet{}})
 }
 
-func Configure() error {
-	if configured {
-		return nil
-	}
-	flag.StringVar(&staticPrefix, "static", "/static/", "URL prefix for serving the 'static' directory")
-	flag.StringVar(&root, "root", "", "Directory that contains uncompiled application assets")
-	flag.StringVar(&logFilePath, "log", "", "Path to log file")
-	flag.StringVar(&Port, "port", "8090", "Port on which the application will listen")
-	flag.BoolVar(&Debug, "debug", true, "Sets the env.Debug value within Gadget")
-	flag.Parse()
+type Serve struct{
+	*flag.FlagSet
+}
+
+func (s *Serve) SetFlags() {
+	s.StringVar(&staticPrefix, "static", "/static/", "URL prefix for serving the 'static' directory")
+	s.StringVar(&root, "root", "", "Directory that contains uncompiled application assets")
+	s.StringVar(&logFilePath, "log", "", "Path to log file")
+	s.StringVar(&Port, "port", "8090", "Port on which the application will listen")
+	s.BoolVar(&Debug, "debug", true, "Sets the env.Debug value within Gadget")
+}
+
+func (s *Serve) Run() {
 	if root == "" {
 		if wd, err := os.Getwd(); err != nil {
-			return err
+			panic(err)
 		} else {
 			root = wd
 		}
 	} else if !filepath.IsAbs(root) {
-		return errors.New("fileroot must be an absolute path")
+		panic("fileroot must be an absolute path")
 	}
 	var writer io.Writer
 	if logFilePath != "" {
@@ -46,7 +50,7 @@ func Configure() error {
 			logFilePath = AbsPath(logFilePath)
 		}
 		if f, err := os.OpenFile(logFilePath, os.O_RDWR|os.O_CREATE, 0666); err != nil {
-			return err
+			panic(err)
 		} else {
 			writer = f
 		}
@@ -54,15 +58,19 @@ func Configure() error {
 		writer = os.Stdout
 	}
 	logger = log.New(writer, "gdgt| ", 0)
-	configured = true
-	return nil
+	serveStatic()
+	http.HandleFunc("/", Handler)
+	err := http.ListenAndServe(":"+Port, nil)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func AbsPath(path ...string) string {
 	return filepath.Join(append([]string{root}, path...)...)
 }
 
-func ServeStatic() {
+func serveStatic() {
 	http.Handle(staticPrefix, http.StripPrefix(staticPrefix, http.FileServer(http.Dir(AbsPath("static")))))
 }
 

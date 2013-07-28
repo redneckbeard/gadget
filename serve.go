@@ -2,7 +2,7 @@ package gadget
 
 import (
 	"github.com/redneckbeard/gadget/env"
-	"net/http"
+	"github.com/redneckbeard/gadget/cmd"
 )
 
 var app Gadget
@@ -16,19 +16,12 @@ func SetApp(g Gadget) {
 }
 
 func Go() {
-	if err := env.Configure(); err != nil {
-		panic(err)
-	}
 	if app == nil {
 		panic("No call to SetApp found. Ensure that you've imported your app package you are calling SetApp outside of main.")
 	}
 	if err := app.OnStart(); err != nil {
 		panic(err)
 	}
-	env.ServeStatic()
-	http.HandleFunc("/", Handler())
-	err := http.ListenAndServe(":"+env.Port, nil)
-	if err != nil {
-		panic(err)
-	}
+	env.Handler = Handler()
+	cmd.Run()
 }
