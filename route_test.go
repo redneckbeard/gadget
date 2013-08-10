@@ -115,6 +115,17 @@ func (s *RouteSuite) TestRouterespondCallsControllersUpdateMethodOnPutRequestTha
 	c.Assert(action, Equals, "update")
 }
 
+//Route.Respond calls a controller's Update method on a PATCH request that matches the objectPattern
+func (s *RouteSuite) TestRouterespondCallsControllersUpdateMethodOnPatchRequestThatMatchesObjectpattern(c *C) {
+	r := newRoute("tell-method-names")
+	r.buildPatterns("")
+	req, _ := http.NewRequest("PATCH", "http://127.0.0.1:8000/tell-method-names/1", nil)
+	status, body, action := r.Respond(newRequest(req))
+	c.Assert(status, Equals, 200)
+	c.Assert(body.(string), Equals, "update")
+	c.Assert(action, Equals, "update")
+}
+
 //Route.Respond 404s on a DELETE request that matches its controller's indexPattern
 func (s *RouteSuite) TestRouterespond404SOnDeleteRequestThatMatchesItsControllersIndexpattern(c *C) {
 	r := newRoute("tell-method-names")
