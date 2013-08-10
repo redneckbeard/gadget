@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+type DebugChecker func(*Request) bool
+
+var SetDebugWith DebugChecker = func(r *Request) bool { return false }
+
 // Request wraps an *http.Request and adds some Gadget-derived conveniences. The
 // Params map contains either POST data, GET query parameters, or the body of the
 // request deserialized as JSON if the request sends an Accept header of
@@ -37,6 +41,10 @@ func (r *Request) ContentType() string {
 		return accept
 	}
 	return r.Request.Header.Get("Content-Type")
+}
+
+func (r *Request) Debug() bool {
+	return env.Debug || SetDebugWith(r)
 }
 
 func unpackValues(params map[string]interface{}, values map[string][]string) {
