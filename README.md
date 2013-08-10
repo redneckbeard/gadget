@@ -4,7 +4,7 @@ Gadget is a web framework for Go
 [![Build Status](https://travis-ci.org/redneckbeard/gadget.png?branch=master)](https://travis-ci.org/redneckbeard/gadget)
 
 tl;dr I'm a terrible maintainer of open source software, and I would advise
-against using this framework.
+against using this framework. The API is not exactly stable.
 
 Installation
 ------------
@@ -51,12 +51,17 @@ import (
 	_ "inspector/controllers"
 )
 
-func main() {
+type inspector struct{}
+
+func (i *inspector) OnStart() error {
 	gadget.Routes(
 		gadget.Resource("missions",
 			gadget.Resource("characters")))
+}
 
-	gadget.Go("8090")
+func main() {
+	gadget.SetApp(&inspector{})
+	gadget.Go()
 }
 ```
 
@@ -66,7 +71,8 @@ What's happening here?
   ensure that `init` functions run in that package.
 * We configured routes to RESTful controllers and made them nested. We'll now
   have URLs like `/missions/3/characters/7`.
-* We configured the server to run on port 8090 with the `Go` function.
+* We created a type that implements the gadget app interface, registered it
+  with the application, and fired it up in the call to `main()`.
 
 Gadget favors convention over configuration (sometimes), and the strings that
 are fed to the `gadget.Resource` calls correspond to the names of controllers
@@ -100,7 +106,7 @@ func (c *MissionController) ChiefQuimby(r *gadget.Request) (int, interface{}) {
 }
 
 func init() {
-        c := &MissionController{gadget.New()}
+        c := &MissionController{}
 	gadget.Register(c)
 }
 ```
@@ -121,11 +127,11 @@ the `routing` package does it for you.
 The Gadget router will hit controller methods based on the HTTP verbs that you
 would expect: 
 
-* `GET /mission` routes to `Index`
-* `GET /mission/\d+` routes to `Show`
-* `POST /mission` routes `Create`
-* `PUT /mission/\d+` routes to `Update`
-* `DELETE /mission/\d+` routes to `Destroy`
+* `GET /missions` routes to `Index`
+* `GET /missions/\d+` routes to `Show`
+* `POST /missions` routes `Create`
+* `PUT /missions/\d+` routes to `Update`
+* `DELETE /missions/\d+` routes to `Destroy`
 
 In addition, any exported method on the controller will be routed to for all
 HTTP verbs. `ChiefQuimby` above would be called for any verb when the requested
@@ -184,7 +190,7 @@ against the word "static"... with the `-static` flag.
 
 The command invoked in an upstart job might then look like:
 
-    /usr/local/bin/inspector -static="/media/" -root=/home/penny/files/
+    /usr/local/bin/inspector serve -static="/media/" -root=/home/penny/files/
 
 Response processing
 -------------------
