@@ -1,7 +1,6 @@
 package env
 
 import (
-	"fmt"
 	"github.com/redneckbeard/gadget/cmd"
 	"io"
 	"log"
