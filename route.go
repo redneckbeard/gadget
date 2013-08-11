@@ -112,7 +112,7 @@ func (rte *route) GetActionName(r *Request) (action string) {
 		action = "create"
 	case !atIndex && r.Method == "GET":
 		action = "show"
-	case !atIndex && r.Method == "PUT":
+	case !atIndex && (r.Method == "PUT" || r.Method == "PATCH"):
 		action = "update"
 	case !atIndex && r.Method == "DELETE":
 		action = "destroy"
