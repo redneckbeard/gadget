@@ -2,15 +2,28 @@ package gadget
 
 import (
 	"fmt"
+	"github.com/redneckbeard/gadget/cmd"
 	"net/http"
 	"os"
 	"reflect"
 	"text/tabwriter"
 )
 
+func init() {
+	cmd.Add(&ListRoutes{})
+}
+
 var routes []*route
 
-func PrintRoutes() {
+type ListRoutes struct {
+	*cmd.Flagger
+}
+
+func (c *ListRoutes) SetFlags() {}
+
+func (c *ListRoutes) Desc() string { return "Displays list of routes registered with Gadget." }
+
+func (c *ListRoutes) Run() {
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 
