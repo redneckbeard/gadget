@@ -6,11 +6,11 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"github.com/redneckbeard/gadget/strutil"
 )
 
 func init() {
 	controllerName = regexp.MustCompile(`(\w+)Controller`)
-	pascalCase = regexp.MustCompile(`[A-Z]+[a-z\d]+`)
 }
 
 const (
@@ -24,7 +24,6 @@ const (
 var (
 	controllers    = make(map[string]Controller)
 	controllerName *regexp.Regexp
-	pascalCase     *regexp.Regexp
 	defaultActions = []string{INDEX, SHOW, CREATE, UPDATE, DESTROY}
 )
 
@@ -81,7 +80,7 @@ func nameOf(c Controller) string {
 	if matches == nil || len(matches) != 2 {
 		panic(`Controller names must adhere to the convention of '<name>Controller'`)
 	}
-	return strings.ToLower(hyphenate(matches[1]))
+	return strings.ToLower(strutil.Hyphenate(matches[1]))
 }
 
 func pluralOf(c Controller) string {
@@ -126,14 +125,6 @@ func getController(name string) (Controller, error) {
 	return controller, nil
 }
 
-func hyphenate(pascal string) string {
-	matches := []string{}
-	for _, match := range pascalCase.FindAllString(pascal, -1) {
-		matches = append(matches, strings.ToLower(match))
-	}
-	return strings.Join(matches, "-")
-}
-
 func arbitraryActions(ctlr Controller) (actions [][]string) {
 	t := reflect.TypeOf(ctlr)
 	v := reflect.ValueOf(ctlr)
@@ -141,7 +132,7 @@ func arbitraryActions(ctlr Controller) (actions [][]string) {
 		method := t.Method(i)
 		if method.PkgPath == "" && isAction(v.Method(i)) {
 			isDefault := false
-			name := hyphenate(method.Name)
+			name := strutil.Hyphenate(method.Name)
 			for _, da := range defaultActions {
 				if name == da {
 					isDefault = true

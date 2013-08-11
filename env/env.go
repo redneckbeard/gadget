@@ -1,7 +1,7 @@
 package env
 
 import (
-	"flag"
+	"fmt"
 	"github.com/redneckbeard/gadget/cmd"
 	"io"
 	"log"
@@ -19,16 +19,20 @@ var (
 )
 
 func init() {
-	cmd.Add("serve", &Serve{FlagSet: &flag.FlagSet{}})
+	cmd.Add(&Serve{})
 }
 
 type Serve struct{
-	*flag.FlagSet
+	*cmd.Flagger
+}
+
+func (s *Serve) Desc() string {
+	return "Start a gadget server."
 }
 
 func (s *Serve) SetFlags() {
 	s.StringVar(&staticPrefix, "static", "/static/", "URL prefix for serving the 'static' directory")
-	s.StringVar(&root, "root", "", "Directory that contains uncompiled application assets")
+	s.StringVar(&root, "root", "", "Directory that contains uncompiled application assets. Defaults to current working directory.")
 	s.StringVar(&logFilePath, "log", "", "Path to log file")
 	s.StringVar(&Port, "port", "8090", "Port on which the application will listen")
 	s.BoolVar(&Debug, "debug", true, "Sets the env.Debug value within Gadget")
