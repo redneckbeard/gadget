@@ -98,12 +98,15 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 				matched = route
 				status, body, action = route.Respond(req)
 				if status == 301 || status == 302 {
-					if resp, ok := body.(*Response); ok {
+					resp, ok := body.(*Response)
+					if ok {
 						final = resp.Body.(string)
 					} else {
 						final = body.(string)
 					}
-					http.Redirect(w, r, final, status)
+					resp.Headers.Set("Location", final)
+					resp.status = status
+					resp.write(w)
 					req.log(status, len(final))
 					return
 				}
