@@ -16,6 +16,7 @@ func (s *ResponseSuite) SetUpSuite(c *C) {
 	Register(&ResponseController{})
 	Register(&ImplicitController{})
 	Accept("application/json").Via(JsonBroker)
+	Accept("text/html").Via(HtmlBroker)
 	Routes(Resource("responses"), Resource("implicits"))
 }
 func (s *ResponseSuite) TearDownSuite(c *C) {
@@ -52,6 +53,10 @@ type ImplicitController struct {
 func (c *ImplicitController) Index(*Request) (int, interface{}) {
 	body := struct{ Foo, Bar string }{"baz", "quux"}
 	return 200, body
+}
+
+func HtmlBroker(r *Request, status int, body interface{}, data *RouteData) (int, string) {
+	return 200, ""
 }
 
 //Headers set on a gadget.Response in a controller method are correctly transferred to the http.Response
@@ -98,4 +103,17 @@ func (s *ResponseSuite) TestBodyHttpresponseIsIdenticalBetweenControllerMethodTh
 	c.Assert(err, IsNil)
 
 	c.Assert(string(body1), Equals, string(body2))
+}
+
+// The Content-Type of the outgoing response should be the same as the incoming request provided our app supports that mime type.
+func (s *ResponseSuite) TestContentTypeOfCustomHttpResponseMatchesRequestContentType(c *C) {
+	handler := Handler()
+
+	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/responses", nil)
+	req.Header.Add("Content-Type", "text/html")
+	c.Assert(err, IsNil)
+	resp := httptest.NewRecorder()
+	handler(resp, req)
+
+	c.Assert(resp.Header().Get("Content-Type"), Equals, req.Header.Get("Content-Type"))
 }
