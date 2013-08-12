@@ -46,6 +46,12 @@ func (c *ResponseController) Show(*Request) (int, interface{}) {
 	return 200, response
 }
 
+func (c *ResponseController) CookieAndRedirect(*Request) (int, interface{}) {
+	response := NewResponse("/responses")
+	response.AddCookie(cookie)
+	return 302, response
+}
+
 type ImplicitController struct {
 	*DefaultController
 }
@@ -117,3 +123,17 @@ func (s *ResponseSuite) TestContentTypeOfCustomHttpResponseMatchesRequestContent
 
 	c.Assert(resp.Header().Get("Content-Type"), Equals, req.Header.Get("Content-Type"))
 }
+
+// We should be able to set a cookie and redirect using the technique outlined in the CookieAndRedirect action.
+func (s *ResponseSuite) TestSetCookieAndRedirect (c *C) {
+	handler := Handler()
+
+	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/responses/cookie-and-redirect", nil)
+	c.Assert(err, IsNil)
+	resp := httptest.NewRecorder()
+	handler(resp, req)
+
+	c.Assert(resp.Code, Equals, 302)
+	c.Assert(resp.Header().Get("Set-Cookie"), Equals, cookie.String())
+}
+
