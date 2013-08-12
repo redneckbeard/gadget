@@ -2,6 +2,7 @@ package gadget
 
 import (
 	. "launchpad.net/gocheck"
+	"github.com/redneckbeard/gadget/strutil"
 )
 
 type ControllerSuite struct{}
@@ -26,7 +27,7 @@ type BrokenName struct {
 
 //hyphenate should convert "PascalCase" into "pascal-case"
 func (s *ControllerSuite) TestHyphenateShouldConvertPascalcaseIntoPascalcase(c *C) {
-	c.Assert(hyphenate("PascalCase"), Equals, "pascal-case")
+	c.Assert(strutil.Hyphenate("PascalCase"), Equals, "pascal-case")
 }
 
 //NameOf(&TestController) should return "test"

@@ -24,6 +24,10 @@ func (c *ListRoutes) SetFlags() {}
 func (c *ListRoutes) Desc() string { return "Displays list of routes registered with Gadget." }
 
 func (c *ListRoutes) Run() {
+	PrintRoutes()
+}
+
+func PrintRoutes() {
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 
