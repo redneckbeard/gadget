@@ -35,5 +35,5 @@ func XmlBroker(r *Request, status int, body interface{}, data *RouteData) (int, 
 	if err != nil {
 		return 500, ""
 	}
-	return status, string(serialized)
+	return status, xml.Header + string(serialized)
 }
