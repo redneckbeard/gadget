@@ -16,15 +16,17 @@ type RouteData struct {
 var brokers = make(map[string]Broker)
 
 type contentType struct {
-	mime string
+	mimes []string
 }
 
 func (ct *contentType) Via(broker Broker) {
-	brokers[ct.mime] = broker
+	for _, mime := range ct.mimes {
+		brokers[mime] = broker
+	}
 }
 
-func Accept(mime string) *contentType {
-	return &contentType{mime}
+func Accept(mimes ...string) *contentType {
+	return &contentType{mimes}
 }
 
 func clearBrokers() {
