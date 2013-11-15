@@ -1,7 +1,7 @@
 package env
 
 import (
-	"github.com/redneckbeard/gadget/cmd"
+	"github.com/redneckbeard/quimby"
 	"io"
 	"log"
 	"net/http"
@@ -18,11 +18,11 @@ var (
 )
 
 func init() {
-	cmd.Add(&Serve{})
+	quimby.Add(&Serve{})
 }
 
 type Serve struct{
-	*cmd.Flagger
+	*quimby.Flagger
 }
 
 func (s *Serve) Desc() string {

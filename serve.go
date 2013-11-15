@@ -2,7 +2,7 @@ package gadget
 
 import (
 	"github.com/redneckbeard/gadget/env"
-	"github.com/redneckbeard/gadget/cmd"
+	"github.com/redneckbeard/quimby"
 )
 
 var app Gadget
@@ -23,5 +23,5 @@ func Go() {
 		panic(err)
 	}
 	env.Handler = Handler()
-	cmd.Run()
+	quimby.Run()
 }

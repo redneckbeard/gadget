@@ -2,7 +2,7 @@ package gadget
 
 import (
 	"fmt"
-	"github.com/redneckbeard/gadget/cmd"
+	"github.com/redneckbeard/quimby"
 	"net/http"
 	"os"
 	"reflect"
@@ -10,13 +10,13 @@ import (
 )
 
 func init() {
-	cmd.Add(&ListRoutes{})
+	quimby.Add(&ListRoutes{})
 }
 
 var routes []*route
 
 type ListRoutes struct {
-	*cmd.Flagger
+	*quimby.Flagger
 }
 
 func (c *ListRoutes) SetFlags() {}
