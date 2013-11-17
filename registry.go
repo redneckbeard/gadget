@@ -32,8 +32,14 @@ func PrintRoutes() {
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 
 	for _, r := range routes {
-		t := reflect.TypeOf(r.controller)
-		fmt.Fprintln(w, r, "\t", t.String()[1:])
+		var desc string
+		if r.controller != nil {
+			t := reflect.TypeOf(r.controller)
+			desc = t.String()[1:]
+		} else {
+			desc = "http.HandlerFunc"
+		}
+		fmt.Fprintln(w, r, "\t", desc)
 	}
 	w.Flush()
 }
@@ -51,7 +57,7 @@ func Routes(rtes ...*route) {
 // /<IdPattern> will still map to the controller's Show, Update, and Delete
 // methods.
 func SetIndex(controllerName string) *route {
-	route := newRoute(controllerName)
+	route := newRoute(controllerName, nil)
 	route.segment = ""
 	route.buildPatterns("")
 	return route
@@ -60,7 +66,7 @@ func SetIndex(controllerName string) *route {
 // Resource creates a route to the specified controller and optionally creates
 // additional routes nested under it.
 func Resource(controllerName string, nested ...*route) *route {
-	route := newRoute(controllerName)
+	route := newRoute(controllerName, nil)
 	route.subroutes = nested
 	route.buildPatterns("")
 	return route
@@ -69,9 +75,16 @@ func Resource(controllerName string, nested ...*route) *route {
 // Prefixed mounts routes at a URL path that is not necessarily a controller
 // name.
 func Prefixed(prefix string, nested ...*route) *route {
-	route := newRoute("")
+	route := newRoute("", nil)
 	route.subroutes = nested
 	route.buildPatterns(prefix)
+	return route
+}
+
+// HandleFunc mounts an http.HandlerFunc at the specified URL.
+func HandleFunc(mount string, handler http.HandlerFunc) *route {
+	route := newRoute(mount, handler)
+	route.buildPatterns("")
 	return route
 }
 
@@ -95,6 +108,10 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 		req := newRequest(r)
 		for _, route := range routes {
 			if route.Match(req) != nil {
+				if route.handler != nil {
+					route.handler(w, r)
+					return
+				}
 				matched = route
 				status, body, action = route.Respond(req)
 				if status == 301 || status == 302 {

@@ -2,18 +2,18 @@ package gadget
 
 import (
 	"fmt"
+	"net/http"
 	"reflect"
 	"regexp"
 	"strings"
 )
 
 type route struct {
-	segment       string
-	indexPattern  *regexp.Regexp
-	objectPattern *regexp.Regexp
-	actionPattern *regexp.Regexp
-	controller    Controller
-	subroutes     []*route
+	segment                                    string
+	indexPattern, objectPattern, actionPattern *regexp.Regexp
+	handler                                    http.HandlerFunc
+	controller                                 Controller
+	subroutes                                  []*route
 }
 
 func (rte *route) String() string {
@@ -30,12 +30,14 @@ func (rte *route) buildPatterns(prefix string) {
 	} else {
 		basePattern := prefix + rte.segment
 		rte.indexPattern = regexp.MustCompile("^" + basePattern + "$")
-		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, strings.Replace(nameOf(rte.controller), "-", "_", -1), rte.controller.IdPattern())
-		rte.objectPattern = regexp.MustCompile(patternWithId)
-		actions := rte.controller.extraActionNames()
-		if len(actions) > 0 {
-			actionPatternString := fmt.Sprintf(`^%s/(?:%s)$`, basePattern, strings.Join(actions, "|"))
-			rte.actionPattern = regexp.MustCompile(actionPatternString)
+		if rte.controller != nil {
+			patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, strings.Replace(nameOf(rte.controller), "-", "_", -1), rte.controller.IdPattern())
+			rte.objectPattern = regexp.MustCompile(patternWithId)
+			actions := rte.controller.extraActionNames()
+			if len(actions) > 0 {
+				actionPatternString := fmt.Sprintf(`^%s/(?:%s)$`, basePattern, strings.Join(actions, "|"))
+				rte.actionPattern = regexp.MustCompile(actionPatternString)
+			}
 		}
 	}
 	// Calls to Prefixed generate routes without controllers, and the value of prefix is already all set for those
@@ -51,7 +53,7 @@ func (rte *route) buildPatterns(prefix string) {
 
 func (rte *route) flatten() []*route {
 	var flattened []*route
-	if rte.controller != nil {
+	if rte.controller != nil || rte.handler != nil {
 		flattened = append(flattened, rte)
 	}
 	for _, r := range rte.subroutes {
@@ -60,15 +62,15 @@ func (rte *route) flatten() []*route {
 	return flattened
 }
 
-func newRoute(segment string) *route {
+func newRoute(segment string, handler http.HandlerFunc) *route {
 	if segment == "" {
 		return &route{segment: segment}
 	}
 	controller, err := getController(segment)
-	if err != nil {
+	if err != nil && handler == nil {
 		panic(err)
 	}
-	rte := &route{segment: segment, controller: controller}
+	rte := &route{segment: segment, controller: controller, handler: handler}
 	return rte
 }
 
