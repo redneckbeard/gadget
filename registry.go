@@ -13,8 +13,6 @@ func init() {
 	quimby.Add(&ListRoutes{})
 }
 
-var routes []*route
-
 type ListRoutes struct {
 	*quimby.Flagger
 }
@@ -24,14 +22,14 @@ func (c *ListRoutes) SetFlags() {}
 func (c *ListRoutes) Desc() string { return "Displays list of routes registered with Gadget." }
 
 func (c *ListRoutes) Run() {
-	PrintRoutes()
+	app.PrintRoutes()
 }
 
-func PrintRoutes() {
+func (a *App) PrintRoutes() {
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 
-	for _, r := range routes {
+	for _, r := range a.routes {
 		var desc string
 		if r.controller != nil {
 			t := reflect.TypeOf(r.controller)
@@ -44,20 +42,26 @@ func PrintRoutes() {
 	w.Flush()
 }
 
+type App struct {
+	routes []*route
+	Brokers map[string]Broker
+	Controllers    map[string]Controller
+}
+
 // Routes registers a variable number of routes with the Gadget router. Arguments to
 // Routes should be calls to SetIndex, Resource, or Prefixed.
-func Routes(rtes ...*route) {
-	routes = []*route{}
+func (a *App) Routes(rtes ...*route) {
+	a.routes = []*route{}
 	for _, r := range rtes {
-		routes = append(routes, r.flatten()...)
+		a.routes = append(a.routes, r.flatten()...)
 	}
 }
 
 // SetIndex creates a route that maps / to the specified controller.
 // /<IdPattern> will still map to the controller's Show, Update, and Delete
 // methods.
-func SetIndex(controllerName string) *route {
-	route := newRoute(controllerName, nil)
+func (a *App) SetIndex(controllerName string) *route {
+	route := a.newRoute(controllerName, nil)
 	route.segment = ""
 	route.buildPatterns("")
 	return route
@@ -65,8 +69,8 @@ func SetIndex(controllerName string) *route {
 
 // Resource creates a route to the specified controller and optionally creates
 // additional routes nested under it.
-func Resource(controllerName string, nested ...*route) *route {
-	route := newRoute(controllerName, nil)
+func (a *App) Resource(controllerName string, nested ...*route) *route {
+	route := a.newRoute(controllerName, nil)
 	route.subroutes = nested
 	route.buildPatterns("")
 	return route
@@ -74,16 +78,16 @@ func Resource(controllerName string, nested ...*route) *route {
 
 // Prefixed mounts routes at a URL path that is not necessarily a controller
 // name.
-func Prefixed(prefix string, nested ...*route) *route {
-	route := newRoute("", nil)
+func (a *App) Prefixed(prefix string, nested ...*route) *route {
+	route := a.newRoute("", nil)
 	route.subroutes = nested
 	route.buildPatterns(prefix)
 	return route
 }
 
 // HandleFunc mounts an http.HandlerFunc at the specified URL.
-func HandleFunc(mount string, handler http.HandlerFunc) *route {
-	route := newRoute(mount, handler)
+func (a *App) HandleFunc(mount string, handler http.HandlerFunc) *route {
+	route := a.newRoute(mount, handler)
 	route.buildPatterns("")
 	return route
 }
@@ -95,7 +99,7 @@ func HandleFunc(mount string, handler http.HandlerFunc) *route {
 //
 // In theory, Gadget users will not ever have to call Handler, as Gadget will
 // set up http.HandleFunc to use its return value.
-func Handler() func(w http.ResponseWriter, r *http.Request) {
+func (a *App) Handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
 			status   int
@@ -106,7 +110,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 			response *Response
 		)
 		req := newRequest(r)
-		for _, route := range routes {
+		for _, route := range a.routes {
 			if route.Match(req) != nil {
 				if route.handler != nil {
 					route.handler(w, r)
@@ -151,7 +155,7 @@ func Handler() func(w http.ResponseWriter, r *http.Request) {
 			response = NewResponse(body)
 		}
 
-		status, final, mime, _ := Process(req, status, response.Body, contentType, routeData)
+		status, final, mime, _ := a.Process(req, status, response.Body, contentType, routeData)
 
 		response.status = status
 		response.final = final

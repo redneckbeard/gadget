@@ -1,27 +1,34 @@
-package gadget_test
-
-import "github.com/redneckbeard/gadget"
+package gadget
 
 type (
-	IndexController  struct{ *gadget.DefaultController }
-	AuthorController struct{ *gadget.DefaultController }
-	EntryController  struct{ *gadget.DefaultController }
+	IndexController  struct{ *DefaultController }
+	AuthorController struct{ *DefaultController }
+	EntryController  struct{ *DefaultController }
+	ExampleApp       struct{ *App }
 )
+
+func (ex *ExampleApp) Configure() error {
+	ex.Routes(
+		ex.SetIndex("index"),
+		ex.Prefixed("writing",
+			ex.Resource("authors",
+				ex.Resource("entries"),
+			)))
+	return nil
+}
+
+var ex *ExampleApp
 
 func (c *IndexController) Plural() string { return "index" }
 func (c *EntryController) Plural() string { return "entries" }
 
 func ExampleRoutes() {
-	gadget.Register(&IndexController{}, &AuthorController{}, &EntryController{})
-	gadget.Routes(
-		gadget.SetIndex("index"),
-		gadget.Prefixed("writing",
-			gadget.Resource("authors",
-				gadget.Resource("entries"),
-			)))
-	gadget.PrintRoutes()
+	ex = &ExampleApp{&App{}}
+	ex.Register(&IndexController{}, &AuthorController{}, &EntryController{})
+	ex.Configure()
+	ex.PrintRoutes()
 	// Output:
-	// ^$ 									 gadget_test.IndexController
-	// ^writing/authors(?:/(?P<author_id>\d+))?$ 				 gadget_test.AuthorController
-	// ^writing/authors/(?P<author_id>\d+)/entries(?:/(?P<entry_id>\d+))?$ 	 gadget_test.EntryController
+	// ^$ 									 gadget.IndexController
+	// ^writing/authors(?:/(?P<author_id>\d+))?$ 				 gadget.AuthorController
+	// ^writing/authors/(?P<author_id>\d+)/entries(?:/(?P<entry_id>\d+))?$ 	 gadget.EntryController
 }

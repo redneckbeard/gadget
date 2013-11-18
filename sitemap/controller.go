@@ -4,10 +4,6 @@ import (
 	"github.com/redneckbeard/gadget"
 )
 
-func init() {
-	gadget.Register(&SitemapController{})
-}
-
 type SitemapController struct {
 	*gadget.DefaultController
 }

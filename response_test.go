@@ -10,17 +10,24 @@ import (
 
 type ResponseSuite struct{}
 
+type responseApp struct {
+	*App
+}
+
+var ra *responseApp
+
 var _ = Suite(&ResponseSuite{})
 
 func (s *ResponseSuite) SetUpSuite(c *C) {
-	Register(&ResponseController{})
-	Register(&ImplicitController{})
-	Accept("application/json").Via(JsonBroker)
-	Accept("text/html").Via(HtmlBroker)
-	Routes(Resource("responses"), Resource("implicits"))
+	ra = &responseApp{ &App{} }
+	ra.Register(&ResponseController{})
+	ra.Register(&ImplicitController{})
+	ra.Accept("application/json").Via(JsonBroker)
+	ra.Accept("text/html").Via(HtmlBroker)
+	ra.Routes(ra.Resource("responses"), ra.Resource("implicits"))
 }
 func (s *ResponseSuite) TearDownSuite(c *C) {
-	clear()
+	ra.Controllers = make(map[string]Controller)
 }
 
 var cookie = &http.Cookie{
@@ -65,9 +72,9 @@ func HtmlBroker(r *Request, status int, body interface{}, data *RouteData) (int,
 	return 200, ""
 }
 
-//Headers set on a gadget.Response in a controller method are correctly transferred to the http.Response
+//Headers set on a Response in a controller method are correctly transferred to the http.Response
 func (s *ResponseSuite) TestHeadersSetOnGadgetresponseControllerMethodAreCorrectlyTransferredToHttpresponse(c *C) {
-	handler := Handler()
+	handler := ra.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/responses", nil)
 	c.Assert(err, IsNil)
@@ -77,9 +84,9 @@ func (s *ResponseSuite) TestHeadersSetOnGadgetresponseControllerMethodAreCorrect
 	c.Assert(resp.Header().Get("X-Framework"), Equals, "Gadget")
 }
 
-//Cookies added to a gadget.Response in a controller method are correctly transferred to the http.Response
+//Cookies added to a Response in a controller method are correctly transferred to the http.Response
 func (s *ResponseSuite) TestCookiesAddedToGadgetresponseControllerMethodAreCorrectlyTransferredToHttpresponse(c *C) {
-	handler := Handler()
+	handler := ra.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/responses/1", nil)
 	c.Assert(err, IsNil)
@@ -90,9 +97,9 @@ func (s *ResponseSuite) TestCookiesAddedToGadgetresponseControllerMethodAreCorre
 	c.Assert(resp.Header().Get("Set-Cookie"), Equals, cookie.String())
 }
 
-//The body of the http.Response is identical between a controller method that returns an anonymous struct and one that returns a gadget.Response with its Body set to that struct
+//The body of the http.Response is identical between a controller method that returns an anonymous struct and one that returns a Response with its Body set to that struct
 func (s *ResponseSuite) TestBodyHttpresponseIsIdenticalBetweenControllerMethodThatReturnsAnonymousStructAndOneThatReturnsGadgetresponseItsBodySetToThatStruct(c *C) {
-	handler := Handler()
+	handler := ra.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/responses", nil)
 	c.Assert(err, IsNil)
@@ -113,7 +120,7 @@ func (s *ResponseSuite) TestBodyHttpresponseIsIdenticalBetweenControllerMethodTh
 
 // The Content-Type of the outgoing response should be the same as the incoming request provided our app supports that mime type.
 func (s *ResponseSuite) TestContentTypeOfCustomHttpResponseMatchesRequestContentType(c *C) {
-	handler := Handler()
+	handler := ra.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/responses", nil)
 	req.Header.Add("Content-Type", "text/html")
@@ -126,7 +133,7 @@ func (s *ResponseSuite) TestContentTypeOfCustomHttpResponseMatchesRequestContent
 
 // We should be able to set a cookie and redirect using the technique outlined in the CookieAndRedirect action.
 func (s *ResponseSuite) TestSetCookieAndRedirect (c *C) {
-	handler := Handler()
+	handler := ra.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/responses/cookie-and-redirect", nil)
 	c.Assert(err, IsNil)

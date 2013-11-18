@@ -12,15 +12,22 @@ import (
 
 type HandlerSuite struct{}
 
+type handlerApp struct {
+	*App
+}
+
+var h *handlerApp
+
 func (s *HandlerSuite) SetUpSuite(c *C) {
-	Register(&MapController{})
-	Register(&ResourceController{})
-	Register(&UuidController{})
-	Accept("application/json").Via(JsonBroker)
-	Routes(SetIndex("maps"), Resource("resources"), Resource("uuids"))
+	h = &handlerApp{ &App{} }
+	h.Register(&MapController{})
+	h.Register(&ResourceController{})
+	h.Register(&UuidController{})
+	h.Accept("application/json").Via(JsonBroker)
+	h.Routes(h.SetIndex("maps"), h.Resource("resources"), h.Resource("uuids"))
 }
 func (s *HandlerSuite) TearDownSuite(c *C) {
-	clear()
+	h.Controllers = make(map[string]Controller)
 }
 
 var _ = Suite(&HandlerSuite{})
@@ -54,7 +61,7 @@ func (c *MapController) Index(r *Request) (int, interface{}) {
 
 //A response should be run through the JSON processor when one is defined and when the request is made with Accepts: application/json
 func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhenRequestIsMadeAcceptsApplicationjson(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/", nil)
 	c.Assert(err, IsNil)
@@ -70,7 +77,7 @@ func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhe
 
 //A response should be run through the JSON processor when one is defined and when the request is made with Content-Type: application/json
 func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhenRequestIsMadeContenttypeApplicationjson(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/", nil)
 	c.Assert(err, IsNil)
@@ -86,7 +93,7 @@ func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhe
 
 //A response should be run through the JSON processor when one is defined and when the request is made with Accepts: application/json and Content-Type: text/xml
 func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhenRequestIsMadeAcceptsApplicationjsonAndContenttypeTextxml(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/", nil)
 	c.Assert(err, IsNil)
@@ -103,7 +110,7 @@ func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhe
 
 //A response should not be run through the JSON processor when one is defined and when the request is made with Content-Type: application/json and Accepts: text/xml
 func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhenRequestIsMadeContenttypeApplicationjsonAndAcceptsTextxml(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/", nil)
 	c.Assert(err, IsNil)
@@ -120,7 +127,7 @@ func (s *HandlerSuite) TestResponseRunThroughJsonProcessorWhenOneIsDefinedAndWhe
 
 //Route.Respond should 404 on a component that is neither an ID match nor an action match
 func (s *HandlerSuite) TestRoute404sNoIdNoAction(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resources/not-extra", nil)
 	resp := httptest.NewRecorder()
@@ -130,7 +137,7 @@ func (s *HandlerSuite) TestRoute404sNoIdNoAction(c *C) {
 
 //Route.Respond should 404 on a component that matches a default action name
 func (s *HandlerSuite) TestRouterespondShould404OnComponentThatMatchesDefaultActionName(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resources/index", nil)
 	resp := httptest.NewRecorder()
@@ -140,7 +147,7 @@ func (s *HandlerSuite) TestRouterespondShould404OnComponentThatMatchesDefaultAct
 
 //Hyphenated URL components should be correctly routed to Pascal-cased method names
 func (s *HandlerSuite) TestHyphenatedUrlComponentsCorrectlyRoutedToPascalcasedMethodNames(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resources/pascal-case", nil)
 	resp := httptest.NewRecorder()
@@ -150,7 +157,7 @@ func (s *HandlerSuite) TestHyphenatedUrlComponentsCorrectlyRoutedToPascalcasedMe
 
 //Route.Respond should 404 on a component that matches an exported method but does not have an Action signature
 func (s *HandlerSuite) TestRouterespondShould404OnComponentThatMatchesExportedMethodButDoesNotHaveActionSignature(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/resources/idpattern", nil)
 	resp := httptest.NewRecorder()
@@ -165,7 +172,7 @@ func fakeUuid() string {
 }
 
 func (s *HandlerSuite) TestCustomIdPattern200OnMatches(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/uuids/"+fakeUuid(), nil)
 	resp := httptest.NewRecorder()
@@ -174,7 +181,7 @@ func (s *HandlerSuite) TestCustomIdPattern200OnMatches(c *C) {
 }
 
 func (s *HandlerSuite) TestCustomIdPattern404sOnNonMatches(c *C) {
-	handler := Handler()
+	handler := h.Handler()
 
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/uuids/"+fakeUuid()[1:], nil)
 	resp := httptest.NewRecorder()

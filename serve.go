@@ -3,12 +3,16 @@ package gadget
 import (
 	"github.com/redneckbeard/gadget/env"
 	"github.com/redneckbeard/quimby"
+	"net/http"
 )
 
 var app Gadget
 
 type Gadget interface {
-	OnStart() error
+	Configure() error
+	Handler() http.HandlerFunc
+	PrintRoutes()
+	Register(...Controller)
 }
 
 func SetApp(g Gadget) {
@@ -19,9 +23,9 @@ func Go() {
 	if app == nil {
 		panic("No call to SetApp found. Ensure that you've imported your app package you are calling SetApp outside of main.")
 	}
-	if err := app.OnStart(); err != nil {
+	if err := app.Configure(); err != nil {
 		panic(err)
 	}
-	env.Handler = Handler()
+	env.Handler = app.Handler()
 	quimby.Run()
 }

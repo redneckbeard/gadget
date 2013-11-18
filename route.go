@@ -31,7 +31,7 @@ func (rte *route) buildPatterns(prefix string) {
 		basePattern := prefix + rte.segment
 		rte.indexPattern = regexp.MustCompile("^" + basePattern + "$")
 		if rte.controller != nil {
-			patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, strings.Replace(nameOf(rte.controller), "-", "_", -1), rte.controller.IdPattern())
+			patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, strings.Replace(NameFromController(rte.controller), "-", "_", -1), rte.controller.IdPattern())
 			rte.objectPattern = regexp.MustCompile(patternWithId)
 			actions := rte.controller.extraActionNames()
 			if len(actions) > 0 {
@@ -42,7 +42,7 @@ func (rte *route) buildPatterns(prefix string) {
 	}
 	// Calls to Prefixed generate routes without controllers, and the value of prefix is already all set for those
 	if rte.controller != nil {
-		prefix += fmt.Sprintf(`%s/(?P<%s_id>%s)/`, rte.segment, nameOf(rte.controller), rte.controller.IdPattern())
+		prefix += fmt.Sprintf(`%s/(?P<%s_id>%s)/`, rte.segment, NameFromController(rte.controller), rte.controller.IdPattern())
 	} else {
 		prefix += "/"
 	}
@@ -62,11 +62,11 @@ func (rte *route) flatten() []*route {
 	return flattened
 }
 
-func newRoute(segment string, handler http.HandlerFunc) *route {
+func (a *App) newRoute(segment string, handler http.HandlerFunc) *route {
 	if segment == "" {
 		return &route{segment: segment}
 	}
-	controller, err := getController(segment)
+	controller, err := a.GetController(segment)
 	if err != nil && handler == nil {
 		panic(err)
 	}

@@ -10,13 +10,18 @@ func Test(t *testing.T) { TestingT(t) }
 
 type RouteSuite struct{}
 
+type routeApp struct { *App }
+
+var rta *routeApp
+
 func (s *RouteSuite) SetUpTest(c *C) {
-	Register(&URLParamController{})
-	Register(&TellMethodNameController{})
+	rta = &routeApp{ &App{} }
+	rta.Register(&URLParamController{})
+	rta.Register(&TellMethodNameController{})
 }
 
 func (s *RouteSuite) TearDownTest(c *C) {
-	clear()
+	rta.Controllers = make(map[string]Controller)
 }
 
 var _ = Suite(&RouteSuite{})
@@ -51,7 +56,7 @@ func (c *TellMethodNameController) Arbitrary(r *Request) (int, interface{}) {
 
 //Route.Respond calls a controller's Index method on a GET request that matches the indexPattern
 func (s *RouteSuite) TestRouterespondCallsControllersIndexMethodOnGetRequestThatMatchesIndexpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tell-method-names", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -62,7 +67,7 @@ func (s *RouteSuite) TestRouterespondCallsControllersIndexMethodOnGetRequestThat
 
 //Route.Respond calls a controller's Show method on a GET request that matches the objectPattern
 func (s *RouteSuite) TestRouterespondCallsControllersShowMethodOnGetRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tell-method-names/1", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -73,7 +78,7 @@ func (s *RouteSuite) TestRouterespondCallsControllersShowMethodOnGetRequestThatM
 
 //Route.Respond 404s on a POST request that matches its controller's objectPattern
 func (s *RouteSuite) TestRouterespond404SOnPostRequestThatMatchesItsControllersIndexpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("POST", "http://127.0.0.1:8000/tell-method-names/1", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -84,7 +89,7 @@ func (s *RouteSuite) TestRouterespond404SOnPostRequestThatMatchesItsControllersI
 
 //Route.Respond calls a controller's Create method on a POST request that matches the indexPattern
 func (s *RouteSuite) TestRouterespondCallsControllersCreateMethodOnPostRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("POST", "http://127.0.0.1:8000/tell-method-names", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -95,7 +100,7 @@ func (s *RouteSuite) TestRouterespondCallsControllersCreateMethodOnPostRequestTh
 
 //Route.Respond 404s on a PUT request that matches its controller's indexPattern
 func (s *RouteSuite) TestRouterespond404SOnPutRequestThatMatchesItsControllersIndexpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/tell-method-names", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -106,7 +111,7 @@ func (s *RouteSuite) TestRouterespond404SOnPutRequestThatMatchesItsControllersIn
 
 //Route.Respond calls a controller's Update method on a PUT request that matches the objectPattern
 func (s *RouteSuite) TestRouterespondCallsControllersUpdateMethodOnPutRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/tell-method-names/1", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -117,7 +122,7 @@ func (s *RouteSuite) TestRouterespondCallsControllersUpdateMethodOnPutRequestTha
 
 //Route.Respond calls a controller's Update method on a PATCH request that matches the objectPattern
 func (s *RouteSuite) TestRouterespondCallsControllersUpdateMethodOnPatchRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("PATCH", "http://127.0.0.1:8000/tell-method-names/1", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -128,7 +133,7 @@ func (s *RouteSuite) TestRouterespondCallsControllersUpdateMethodOnPatchRequestT
 
 //Route.Respond 404s on a DELETE request that matches its controller's indexPattern
 func (s *RouteSuite) TestRouterespond404SOnDeleteRequestThatMatchesItsControllersIndexpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("DELETE", "http://127.0.0.1:8000/tell-method-names", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -139,7 +144,7 @@ func (s *RouteSuite) TestRouterespond404SOnDeleteRequestThatMatchesItsController
 
 //Route.Respond calls a controller's Destroy method on a DELETE request that matches the objectPattern
 func (s *RouteSuite) TestRouterespondCallsControllersDestroyMethodOnDeleteRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("DELETE", "http://127.0.0.1:8000/tell-method-names/1", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -150,7 +155,7 @@ func (s *RouteSuite) TestRouterespondCallsControllersDestroyMethodOnDeleteReques
 
 //Route.Respond should call an arbitrary exported method when a request path matches its name
 func (s *RouteSuite) TestRouterespondCallsControllersArbitraryMethodOnDeleteRequestThatMatchesObjectpattern(c *C) {
-	r := newRoute("tell-method-names", nil)
+	r := rta.newRoute("tell-method-names", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/tell-method-names/arbitrary", nil)
 	status, body, action := r.Respond(newRequest(req))
@@ -185,7 +190,7 @@ func (c *URLParamController) Destroy(r *Request) (int, interface{}) {
 
 //Route.Respond should pass UrlParams to objectPattern controller methods
 func (s *RouteSuite) TestRouterespondShouldPassUrlparamsToObjectpatternControllerMethods(c *C) {
-	r := newRoute("urlparams", nil)
+	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
 	objVerbs := []string{"GET", "PUT", "DELETE"}
 	for _, verb := range objVerbs {
@@ -198,7 +203,7 @@ func (s *RouteSuite) TestRouterespondShouldPassUrlparamsToObjectpatternControlle
 
 //Route.Respond should not pass UrlParams to indexPattern controller methods
 func (s *RouteSuite) TestRouterespondShouldNotPassUrlparamsToIndexpatternControllerMethods(c *C) {
-	r := newRoute("urlparams", nil)
+	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
 	idxVerbs := []string{"GET", "POST"}
 	for _, verb := range idxVerbs {
@@ -217,9 +222,9 @@ func AclFilter(r *Request) (status int, body interface{}) {
 }
 
 func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
-	ctrl, _ := getController("urlparams")
+	ctrl, _ := rta.GetController("urlparams")
 	ctrl.Filter([]string{"update"}, AclFilter)
-	r := newRoute("urlparams", nil)
+	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/urlparams/10", nil)
 	status, body, _ := r.Respond(newRequest(req))
@@ -228,9 +233,9 @@ func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
 }
 
 func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
-	ctrl, _ := getController("urlparams")
+	ctrl, _ := rta.GetController("urlparams")
 	ctrl.Filter([]string{"update"}, AclFilter)
-	r := newRoute("urlparams", nil)
+	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/urlparams/10", nil)
 	status, body, _ := r.Respond(newRequest(req))
@@ -239,9 +244,9 @@ func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
 }
 
 func (s *RouteSuite) TestRespondContinuesAfterNilFilterReturn(c *C) {
-	ctrl, _ := getController("urlparams")
+	ctrl, _ := rta.GetController("urlparams")
 	ctrl.Filter([]string{"update"}, AclFilter)
-	r := newRoute("urlparams", nil)
+	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/urlparams/11", nil)
 	status, body, _ := r.Respond(newRequest(req))

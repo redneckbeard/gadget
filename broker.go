@@ -13,37 +13,33 @@ type RouteData struct {
 	ControllerName, Action, Verb string
 }
 
-var brokers = make(map[string]Broker)
-
 type contentType struct {
 	mimes []string
+	app *App
 }
 
 func (ct *contentType) Via(broker Broker) {
 	for _, mime := range ct.mimes {
-		brokers[mime] = broker
+		ct.app.Brokers[mime] = broker
 	}
 }
 
-func Accept(mimes ...string) *contentType {
-	return &contentType{mimes}
-}
-
-func clearBrokers() {
-	for k, _ := range brokers {
-		delete(brokers, k)
+func (a *App) Accept(mimes ...string) *contentType {
+	if a.Brokers == nil {
+		a.Brokers = make(map[string]Broker)
 	}
+	return &contentType{mimes, a}
 }
 
-func Process(r *Request, status int, body interface{}, mimetype string, data *RouteData) (int, string, string, bool) {
+func (a *App) Process(r *Request, status int, body interface{}, mimetype string, data *RouteData) (int, string, string, bool) {
 	var (
 		broker  Broker
 		matched string
 	)
 	for _, mt := range strings.Split(mimetype, ",") {
-		_, ok := brokers[mt]
+		_, ok := a.Brokers[mt]
 		if ok {
-			broker = brokers[mt]
+			broker = a.Brokers[mt]
 			matched = mt
 			break
 		}

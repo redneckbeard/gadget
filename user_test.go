@@ -9,9 +9,16 @@ import (
 
 type UserSuite struct{}
 
+type userApp struct {
+	*App
+}
+
+var u *userApp
+
 func (s *UserSuite) SetUpTest(c *C) {
-	Register(&AuthStatusController{})
-	Routes(Resource("auth-status"))
+	u = &userApp{ &App{} }
+	u.Register(&AuthStatusController{})
+	u.Routes(u.Resource("auth-status"))
 }
 
 func (s *UserSuite) TearDownTest(c *C) {
@@ -45,7 +52,7 @@ func FakeAuth(r *Request) User {
 
 //The User attached to the Request should not be authenticated if no UserIdentifier has been registered
 func (s *UserSuite) TestUserAttachedToRequestAuthenticatedNoUseridentifierHasBeenRegistered(c *C) {
-	handler := Handler()
+	handler := u.Handler()
 
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/auth-status", nil)
 	resp := httptest.NewRecorder()
@@ -57,7 +64,7 @@ func (s *UserSuite) TestUserAttachedToRequestAuthenticatedNoUseridentifierHasBee
 
 //The User attached to the Request should not be authenticated if the registered UserIdentifier returns an anonymous user
 func (s *UserSuite) TestUserAttachedToRequestAuthenticatedRegisteredUseridentifierReturnsAnonymousUser(c *C) {
-	handler := Handler()
+	handler := u.Handler()
 
 	IdentifyUsersWith(FakeAuth)
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/auth-status", nil)
@@ -70,7 +77,7 @@ func (s *UserSuite) TestUserAttachedToRequestAuthenticatedRegisteredUseridentifi
 
 //The User attached to the Request should be authenticated if the registered UserIdentifier returns an authenticated user
 func (s *UserSuite) TestUserAttachedToRequestAuthenticatedRegisteredUseridentifierReturnsAuthenticatedUser(c *C) {
-	handler := Handler()
+	handler := u.Handler()
 
 	IdentifyUsersWith(FakeAuth)
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/auth-status?authed=yes", nil)

@@ -22,7 +22,6 @@ const (
 )
 
 var (
-	controllers    = make(map[string]Controller)
 	controllerName *regexp.Regexp
 	defaultActions = []string{INDEX, SHOW, CREATE, UPDATE, DESTROY}
 )
@@ -74,7 +73,7 @@ type Controller interface {
 	setActions([][]string)
 }
 
-func nameOf(c Controller) string {
+func NameFromController(c Controller) string {
 	name := reflect.TypeOf(c).Elem().Name()
 	matches := controllerName.FindStringSubmatch(name)
 	if matches == nil || len(matches) != 2 {
@@ -88,7 +87,7 @@ func pluralOf(c Controller) string {
 	if pluralName != "" {
 		return pluralName
 	}
-	return nameOf(c) + "s"
+	return NameFromController(c) + "s"
 }
 
 // Register notifies Gadget that you want to use a type as a Controller. It takes
@@ -103,22 +102,21 @@ func pluralOf(c Controller) string {
 // "WidgetController" will be available to the Resource function for routes as
 // "widgets", but "EntryController" as "entrys", unless you define the Plural
 // method on the Controller to return something more correct.
-func Register(clist ...Controller) {
+func (a *App) Register(clist ...Controller) {
+	if a.Controllers == nil {
+		a.Controllers = make(map[string]Controller)
+	}
 	for _, c := range clist {
 		v := reflect.ValueOf(c).Elem()
 		defaultCtlr := v.FieldByName("DefaultController")
 		defaultCtlr.Set(reflect.ValueOf(newController()))
 		c.setActions(arbitraryActions(c))
-		controllers[pluralOf(c)] = c
+		a.Controllers[pluralOf(c)] = c
 	}
 }
 
-func clear() {
-	controllers = make(map[string]Controller)
-}
-
-func getController(name string) (Controller, error) {
-	controller, ok := controllers[name]
+func (a *App) GetController(name string) (Controller, error) {
+	controller, ok := a.Controllers[name]
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("No controller with label '%s' found", name))
 	}
