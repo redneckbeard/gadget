@@ -36,7 +36,15 @@ func (c *Controller) Run() {
 		}
 		name = args[0]
 	}
-	createControllerFile("", name)
+	current, _ := os.Getwd()
+	path, err := filepath.Rel(
+		filepath.Join(os.ExpandEnv("$GOPATH"), "src"),
+		filepath.Join(current),
+	)
+	if err != nil {
+		fmt.Println("Projects must be created in the src directory of your GOPATH.")
+	}
+	createControllerFile(path, name)
 }
 
 func createControllerFile(projectName, controllerName string) {
@@ -55,6 +63,7 @@ func createControllerFile(projectName, controllerName string) {
 		defer f.Close()
 		t.Execute(f, map[string]string{
 			"name": controllerName,
+			"project": projectName,
 		})
 		fmt.Printf("Created %s\n", path)
 	}

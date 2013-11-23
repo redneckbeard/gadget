@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	gadget.SetApp(&app.App{})
+	gadget.SetApp(app.App)
 	gadget.Go()
 }

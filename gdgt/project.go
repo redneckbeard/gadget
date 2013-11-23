@@ -45,7 +45,7 @@ func (c *New) Run() {
 	subdirs := []string{
 		"controllers",
 		"app",
-		"templates",
+		"templates/home",
 		"static/css",
 		"static/img",
 		"static/js",
@@ -71,6 +71,9 @@ func (c *New) Run() {
 		fmt.Printf("Created %s/main.go\n", name)
 	}
 	copyTemplate("conf.tpl", filepath.Join(name, "app", "conf.go"))
+	copyTemplate("base.html", filepath.Join(name, "templates", "base.html"))
+	copyTemplate("home/index.html", filepath.Join(name, "templates", "home", "index.html"))
+	fmt.Println("Created app/conf.go")
 	createControllerFile(name, "Home")
 }
 

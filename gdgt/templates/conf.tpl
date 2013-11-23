@@ -22,3 +22,9 @@ func (app *gdgt) Configure() error {
 	app.Accept("text/html", "*/*").Via(templates.TemplateBroker)
 	return nil
 }
+
+// Just a little sugar to make common method calls more succinct
+
+func Register(controllers ...gadget.Controller) {
+	App.Register(controllers...)
+}
