@@ -60,9 +60,10 @@ func (s *Serve) Run() {
 	} else {
 		writer = os.Stdout
 	}
-	logger = log.New(writer, "gdgt| ", 0)
+	logger = log.New(writer, "", 0)
 	serveStatic()
 	http.HandleFunc("/", Handler)
+	Log("Running Gadget at 0.0.0.0:" + Port + "...")
 	err := http.ListenAndServe(":"+Port, nil)
 	if err != nil {
 		panic(err)
