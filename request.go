@@ -22,15 +22,14 @@ var SetDebugWith DebugChecker = func(r *Request) bool { return false }
 // the UserIdentifier that the application as registered with IdentifyUsersWith.
 type Request struct {
 	*http.Request
-	Path      string
 	Params    map[string]interface{}
-	Method    string
+	Path      string
 	UrlParams map[string]string
 	User      User
 }
 
 func newRequest(raw *http.Request) *Request {
-	r := &Request{Request: raw, Path: raw.URL.Path[1:], Method: raw.Method}
+	r := &Request{Request: raw, Path: raw.URL.Path[1:]}
 	r.setParams()
 	return r
 }

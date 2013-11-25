@@ -3,240 +3,274 @@ Gadget is a web framework for Go
 
 [![Build Status](https://travis-ci.org/redneckbeard/gadget.png?branch=master)](https://travis-ci.org/redneckbeard/gadget)
 
-tl;dr I'm a terrible maintainer of open source software, and I would advise
-against using this framework. The API is not exactly stable.
+Gadget is a smallish web application framework with a soft spot for content
+negotiation. To install Gadget, just use the go tool.
 
-Installation
-------------
-
-This overview assumes that you already have a working installation of Go1 and
-have a defined `$GOPATH`.
-
-Gadget includes a number of subpackages. You might not need all of them once
-you know how this all works, but for now, `go get` them all at once with the
-handy `...` syntax:
-
-    go get -v github.com/redneckbeard/gadget/...
-
-`-v` will display the names of the packages as they are fetched and compiled,
-which makes me feel more confident that the command actually did what I wanted.
-
-Project setup
--------------
-
-There's very little imposed file/directory structure in a Gadget application. A
-suggested directory layout might look like:
-
-    ./inspector
-    ├── main.go
-    ├── controllers
-    │   ├── missions.go
-    │   └── characters.go
-    └── static
-        ├── css
-        ├── img
-        └── js
-
-The only fixed piece of this layout is that the directory containing static
-assets must be named "static". I cannot imagine a good case for making this
-configurable.
-
-`main.go` could look something like this:
-
-```Go
-package main
-
-import (
-	"github.com/redneckbeard/gadget"
-	_ "inspector/controllers"
-)
-
-type inspector struct{}
-
-func (i *inspector) OnStart() error {
-	gadget.Routes(
-		gadget.Resource("missions",
-			gadget.Resource("characters")))
-}
-
-func main() {
-	gadget.SetApp(&inspector{})
-	gadget.Go()
-}
+```
+$ go get github.com/redneckbeard/gadget
 ```
 
-What's happening here?
+The gdgt package will install a command that will help you generate Gadget
+projects. You don't have to use it, but it does mean mashing fewer buttons. You
+need Go 1.2 to use it.
 
-* We imported some stuff, notably our controllers with the blank identifier to
-  ensure that `init` functions run in that package.
-* We configured routes to RESTful controllers and made them nested. We'll now
-  have URLs like `/missions/3/characters/7`.
-* We created a type that implements the gadget app interface, registered it
-  with the application, and fired it up in the call to `main()`.
+```
+$ go get github.com/redneckbeard/gadget/gdgt
+```
 
-Gadget favors convention over configuration (sometimes), and the strings that
-are fed to the `gadget.Resource` calls correspond to the names of controllers
-that we defined in our `controllers` package. The files in the controller
-package all declare a controller type, embed a default controller to make it
-simpler to implement the controller interface, and explicitly register that
-controller with the framework. Observe:
+Let's create a sample project. I've got some photos I'd like to share with some
+friends, so we'll make a photo app. I'm going to run the gdgt tool at the root
+of `$GOPATH/src`.
 
-```Go
-package controllers
+```
+$ gdgt new photos
+Created directory photos/controllers
+Created directory photos/app
+Created directory photos/templates
+Created directory photos/static/css
+Created directory photos/static/img
+Created directory photos/static/js
+Created photos/main.go
+Created app/conf.go
+Created photos/controllers/home.go
+```
 
-import (
-	"github.com/redneckbeard/gadget"
-)
+The skeleton project is empty, but it is a complete program and we can compile it right now. Running `go install photos` will put an executable in `$GOPATH/bin`. I have that directory on my `$PATH`, so now I can invoke `photos`.
 
-type MissionController struct {
+```
+$ photos
+Available commands:
+  help
+  serve
+  list-routes
+Type 'photos help <command>' for more information on a specific command.
+```
+
+I'm curious what `list-routes` will output.
+
+```
+$ photos list-routes
+^$ 	 controllers.HomeController
+```
+
+So, we get a regular expression representing the root url mapped to
+`controllers.HomeController`. Now I want to see what that does, so I'm going to
+run `photos serve` and throw a request at it on another tab. I want to build
+some super fancy Ember.js client for this site, so I'll politely ask for
+JavaScript.
+
+```
+$ curl http://127.0.0.1:8090 -H 'Accept: application/json' -v
+< HTTP/1.1 404 Not Found
+< Content-Type: application/json
+< Date: Sat, 23 Nov 2013 05:02:45 GMT
+< Content-Length: 2
+< 
+* Connection #0 to host 127.0.0.1 left intact
+""
+```
+
+Empty string. Booooo. Well, at least it responded with the correct
+`Content-Type`. But we want to send back some sort of content, so we'll open up
+`controllers/home.go` and make a few changes. The definition of
+`HomeController` looks like this when we open it up:
+
+```
+type HomeController struct {
 	*gadget.DefaultController
 }
 
-func (c *MissionController) Index(r *gadget.Request) (int, interface{}) {
-	return 200, []&struct{Mission string}{{"Dr. Claw"},{"M.A.D. Cat"}}
-}
+func (c *HomeController) Plural() string { return "home" }
+```
 
-func (c *MissionController) Show(r *gadget.Request) (int, interface{}) {
-	missionId := r.UrlParams["mission_id"]
-	return 200, "Mission #" + missionId + ": this message will self-destruct."
-}
+We're going to add a method to this to serve some content. For now, it's just
+going to send back a bunch of strings.
 
-func (c *MissionController) ChiefQuimby(r *gadget.Request) (int, interface{}) {
-	return 200, "You've done it again, Gadget! Don't know how you do it!"
-}
-
-func init() {
-        c := &MissionController{}
-	gadget.Register(c)
+```
+func (c *HomeController) Index(r *gadget.Request) (int, interface{}) {
+	return 200, []string{
+		"pic1.jpg",
+		"pic2.jpg",
+		"pic3.jpg",
+		"pic4.jpg",
+	}
 }
 ```
 
-Controller methods have access to a `Request` object that contains a map of any
-parameters pulled from the URL. They return simply an HTTP status code and any
-value at all for the body (more on why in a bit). The controller interface
-requires `Index`, `Show`, `Create`, `Update`, and `Destroy` methods. Embedding
-a pointer to a `DefaultController` means that these are all implemented for
-you. However, _this doesn't provide you with anything but 404s_. If you want to
-take action in response to a particular verb, override the method.
+In Gadget, controller methods return a status code and a response body. The
+response body's type is `interface{}` -- it can be just about anything you
+want. The framework just has to figure out what to do with it.
 
-When we call `controller.Register`, we are then able to `controller.Get` each
-of the registered controllers by the lower-cased name of the controller struct
-type, minus "controller". But you probably won't ever do so directly, because
-the `routing` package does it for you.
+So we recompile and start the server again, and give that curl another go.
 
-The Gadget router will hit controller methods based on the HTTP verbs that you
-would expect: 
+```
+$ curl http://127.0.0.1:8090 -H 'Accept: application/json' -v
+< HTTP/1.1 200 OK
+< Content-Type: application/json
+< Date: Sat, 23 Nov 2013 05:15:18 GMT
+< Content-Length: 58
+< 
+[
+  "pic1.jpg",
+  "pic2.jpg",
+  "pic3.jpg",
+  "pic4.jpg"
+]
+```
 
-* `GET /missions` routes to `Index`
-* `GET /missions/\d+` routes to `Show`
-* `POST /missions` routes `Create`
-* `PUT /missions/\d+` routes to `Update`
-* `DELETE /missions/\d+` routes to `Destroy`
+That's more like it! But what happens if we don't explicitly request JSON?
 
-In addition, any exported method on the controller will be routed to for all
-HTTP verbs. `ChiefQuimby` above would be called for any verb when the requested
-path was `/missions/chief-quimby`.
+```
+$ curl http://127.0.0.1:8090
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+	  
+[pic1.jpg pic2.jpg pic3.jpg pic4.jpg]
 
-Numeric ids are the default, but if you want something else in your URLs, just
-override `func IdPattern() string` on your controller.
+  </body>
+</html>
+```
 
-Gadget doesn't pretend to speak perfect English, so it takes the dumbest
-possible guess at pluralizing your controller's name and just tacks an "s" on
-the end. If inflecting is more complicated, define a `Plural() string` method
-on your controller.
+That may look a little broken, but it highlights a fundamental principle of
+Gadget's controller mechanism: all requests are subject to content negotiation.
+This is why the return signature for the response body is `interface{}` -- it
+lets us send a single value back to the requester, with the final
+representation of that value being determined by a series of content brokers
+that match Accept headers against functions for transforming interface values.
 
-### Action filters
+The default Gadget configuration sends `*/*` through to a broker that passes
+the return value to a Go template. The template we're interested in was created
+for us by `gdgt new` as `templates/home/index.html`. It looks like this:
 
-When developing a web application, you frequently have a short-circuit pattern
-common to a number of controller methods -- "404 if the user isn't logged in",
-"Redirect if the user isn't authorized", etc. To accommodate code reuse, Gadget
-controllers allow you to define filters on certain actions. Setting one up in
-the example above might look like this:
+```
+{{define "main"}}
+{{.}}
+{{end}}
+```
 
-```Go
-func init() {
-	c := &MissionController{gadget.New()}
-	c.Filter([]string{"create", "update", "destroy"}, UserIsPenny)
-	gadget.Register(c)
+Not much there. We can change it to loop over the context of the template using
+the "range" function, and throw a few tags in there.
+
+```
+{{define "main"}}
+<ul>
+{{range .}}
+  <li>{{.}}</li>
+{{end}}
+</ul>
+```
+
+Now our `Accept`less curl looks a little less funky:
+
+```
+$ curl http://127.0.0.1:8090
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+  <ul>
+    <li>pic1.jpg</li>
+    <li>pic2.jpg</li>
+    <li>pic3.jpg</li>
+    <li>pic4.jpg</li>
+  </ul>
+  </body>
+</html>
+```
+
+We're hitting / here, but even if we weren't, there's no extension involved:
+Gadget speaks HTTP and only cares about your `Accept` header. We can send
+`Accept: text/plain` and we will get an unadorned fmt.Print of the response
+body `interface{}` value:
+
+```
+$ curl http://127.0.0.1:8090 -H 'Accept: text/plain'
+[pic1.jpg pic2.jpg pic3.jpg pic4.jpg]
+```
+
+Of course, the data we're getting back could be a bit more interesting. Let's
+amend that `Index` method to return a slice of anonymous structs with a few
+different fields.
+
+```
+func (c *HomeController) Index(r *gadget.Request) (int, interface{}) {
+	return 200, []struct{
+		Filename, Title, Description string
+	}{
+		{"pic1.jpg", "Pic One", "The first picture in our albom."},
+		{"pic2.jpg", "Pic Two", "The second picture in our albom."},
+		{"pic3.jpg", "Pic Three", "The third picture in our albom."},
+		{"pic4.jpg", "Pic Four", "The fourth picture in our albom."},
+	}
 }
 ```
 
-`UserIsPenny` is just a function with the signature `func(r *requests.Request)
-(int, interface{})` just like a controller method. If this function returns a
-non-zero status code, the controller method that was filtered will never be
-called. If the filter returns a status code of zero, Gadget will move on to the
-next filter for that action until they are exhausted, and then call the
-controller method.
+We'll also make a tweak to the inside of that template loop.
 
-Running Gadget applications
----------------------------
+```
+<li>
+  <a href="{{.Filename}}" title="{{.Title}}">{{.Description}}</a>
+</li>
+```
 
-Since your Gadget application is just a Go package, we can build this with `go
-install inspector`, and voilà -- we have a single-file web application / HTTP
-server waiting for as `$GOPATH/bin/inspector`.
+Now our responses for the three content types we've tried sending look like this:
 
-Because there are some files that don't go into the build, and the build is
-just an executable, Gadget needs an absolute path that it can assume as the
-root that all relative filepaths branch off of. In development, this will often
-simply be the current working directory, and that's the default. However, in
-production, you might have your binary and your frontend files in completely
-different locations. For this reason, we can call the `inspector` executable
-with a `-root` flag and point it at whatever path we please.
+```
+$ curl http://127.0.0.1:8090 -H 'Accept: text/plain'
+[{pic1.jpg Pic One The first picture in our albom.} {pic2.jpg Pic Two The second picture in our albom.} {pic3.jpg Pic Three The third picture in our albom.} {pic4.jpg Pic Four The fourth picture in our albom.}]
 
-Gadget assumes that the file root will contain a `static` directory and that
-you want it to serve the contents thereof as files. By default, it will do so
-at `/static/`. You can, however, change this to accommodate whatever you have
-against the word "static"... with the `-static` flag.
+jlukens-mbp:src jlukens$ curl http://127.0.0.1:8090 -H 'Accept: text/html'
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+  <ul>
+    <li>
+      <a href="pic1.jpg" title="Pic One">The first picture in our albom.</a>
+    </li>
+    <li>
+      <a href="pic2.jpg" title="Pic Two">The second picture in our albom.</a>
+    </li>
+    <li>
+      <a href="pic3.jpg" title="Pic Three">The third picture in our albom.</a>
+    </li>
+    <li>
+      <a href="pic4.jpg" title="Pic Four">The fourth picture in our albom.</a>
+    </li>
+  </ul>
+  </body>
+</html>
 
-The command invoked in an upstart job might then look like:
+$ curl http://127.0.0.1:8090 -H 'Accept: application/json'
+[
+  {
+    "Filename": "pic1.jpg",
+    "Title": "Pic One",
+    "Description": "The first picture in our albom."
+  },
+  {
+    "Filename": "pic2.jpg",
+    "Title": "Pic Two",
+    "Description": "The second picture in our albom."
+  },
+  {
+    "Filename": "pic3.jpg",
+    "Title": "Pic Three",
+    "Description": "The third picture in our albom."
+  },
+  {
+    "Filename": "pic4.jpg",
+    "Title": "Pic Four",
+    "Description": "The fourth picture in our albom."
+  }
+]
+```
 
-    /usr/local/bin/inspector serve -static="/media/" -root=/home/penny/files/
-
-Response processing
--------------------
-
-The interface{} value you that you return from a controller method is by
-default piped through `fmt.Sprint`. Strings are predictable, as are numbers;
-other types look more like debugging output. However, Gadget has a mechanism
-for transforming those values based on `Content-Type` or `Accept` headers. By
-defining processor functions and assigning them to MIME types, you can make the
-same controller methods speak HTML and JSON.
-
-    processor.Define("application/json", processor.JsonProcessor)
-    processor.Define("text/xml", processor.XmlProcessor)
-
-JSON and XML processors are included with Gadget in
-`github.com/redneckbeard/processor`. Placing the lines above in your `main`
-function will make Gadget serialize the body values returned from your
-controller methods when the appropriate headers are found in the request.
-
-Gadget also ships with `processor.TemplateProcessor`, which wraps Go's
-excellent html/template package. For any given route, it will load two
-templates:
-
-* `$GADGET_ROOT/templates/base.html`, and
-* `$GADGET_ROOT/templates/<controller_name>/<action_name>.html`, where
-  `controller_name` is the same as the value used in routes, and `action_name`
-is the name of the controller method being invoked as a lowercase string.
-
-If either of these templates is not found, the processor will return a 404. If
-both are found, the resulting `*Template` will be executed with the interface{}
-value returned from the controller method as the context.
-
-This is a thin wrapper around the templating package. There is no abstraction
-around the templating language itself, so the controller method template files
-must explicitly define a template (or multiple templates) and `base.html` must
-reference those templates for the system to actually work.
-
-
-Wish list
----------
-
-Here are a few features that are clearly necessary but I have yet to implement:
-
-* Django-style middleware
-
-Thanks for watching
--------------------
-
-![Inspector Gadget](http://www.disneyclips.com/imagesnewb6/imageslwrakr01/inspectorgadget4.gif)
+This is an extremely brief introduction, but if you think it's neat and would
+like to know more, there are plenty of docs [over on
+godoc.org](http://godoc.org/github.com/redneckbeard/gadget).
