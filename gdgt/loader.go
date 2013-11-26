@@ -14,7 +14,9 @@ func templatePath(name string) string {
 
 func getTemplate(name string) *template.Template {
 	path := templatePath(name)
-	t, err := template.ParseFiles(path)
+	t, err := template.New(name).Funcs(template.FuncMap{
+		"matchString": func(a, b string) bool { return a == b },
+	}).ParseFiles(path)
 	if err != nil {
 		panic(err)
 	}

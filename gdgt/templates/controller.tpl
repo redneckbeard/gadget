@@ -13,6 +13,6 @@ type {{.name}}Controller struct {
 	*gadget.DefaultController
 }
 
-{{if eq .name "Home"}}
+{{if matchString .name "Home"}}
 func (c *HomeController) Plural() string { return "home" }
 {{end}}
