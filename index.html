@@ -28,21 +28,27 @@
         </ul>
       </header>
       <section>
-        <p>Gadget is a web framework for Go that focuses on building RESTful web services
-with content negotiation.</p>
+        <p>Gadget is a smallish web application framework with a soft spot for content
+negotiation. To install Gadget, just use the go tool.</p>
 
-<h2>
-<a name="setup" class="anchor" href="#setup"><span class="octicon octicon-link"></span></a>Setup</h2>
-
-<p>To install Gadget, you need a working installation of Go1.1+ and have a defined
-<code>$GOPATH</code>. Just run:</p>
-
-<pre><code>go get github.com/redneckbeard/gadget
+<pre><code>$ go get github.com/redneckbeard/gadget
 </code></pre>
 
-<p>This will install a few subpackages and dependencies. It will not install all
-the Gadget subpackages, which provide utilities for form validation, sitemap
-generation, and some other stuff.</p>
+<p>The gdgt package will install a command that will help you generate Gadget
+projects. You don't have to use it, but it does mean mashing fewer buttons. You
+need Go 1.2 to use it.</p>
+
+<pre><code>$ go get github.com/redneckbeard/gadget/gdgt
+</code></pre>
+
+<h2>
+<a name="show-me-how-it-works" class="anchor" href="#show-me-how-it-works"><span class="octicon octicon-link"></span></a>Show me how it works!</h2>
+
+<p>The <a href="https://github.com/redneckbeard/gadget/blob/master/README.md">README</a> is a
+narrated terminal session of having a first play with Gadget. If that's your
+style, it may be more helpful than the summaries below.  All the concepts here
+are documented more granularly on
+<a href="http://godoc.org/github.com/redneckbeard/gadget">godoc.org</a>.</p>
 
 <h3>
 <a name="project-layout" class="anchor" href="#project-layout"><span class="octicon octicon-link"></span></a>Project layout</h3>
@@ -101,13 +107,6 @@ with a <code>-root</code> flag and point it at whatever path we please.</p>
 you want it to serve the contents thereof as files. By default, it will do so
 at <code>/static/</code>. You can, however, change this to accommodate whatever you have
 against the word "static"... with the <code>-static</code> flag.</p>
-
-<h2>
-<a name="using-this-thing" class="anchor" href="#using-this-thing"><span class="octicon octicon-link"></span></a>Using this thing</h2>
-
-<p>All the concepts here are documented more granularly on
-<a href="http://godoc.org/github.com/redneckbeard/gadget">godoc.org</a>. These are the
-highlights of how to build a Gadget application.</p>
 
 <h2>
 <a name="routing" class="anchor" href="#routing"><span class="octicon octicon-link"></span></a>Routing</h2>
