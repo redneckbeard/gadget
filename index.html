@@ -1,0 +1,380 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Gadget by redneckbeard</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Gadget</h1>
+        <p>A smallish web framework for Go</p>
+
+        <p class="view"><a href="https://github.com/redneckbeard/gadget">View the Project on GitHub <small>redneckbeard/gadget</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/redneckbeard/gadget/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/redneckbeard/gadget/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/redneckbeard/gadget">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>Gadget is a web framework for Go that focuses on building RESTful web services
+with content negotiation.</p>
+
+<h2>
+<a name="setup" class="anchor" href="#setup"><span class="octicon octicon-link"></span></a>Setup</h2>
+
+<p>To install Gadget, you need a working installation of Go1.1+ and have a defined
+<code>$GOPATH</code>. Just run:</p>
+
+<pre><code>go get github.com/redneckbeard/gadget
+</code></pre>
+
+<p>This will install a few subpackages and dependencies. It will not install all
+the Gadget subpackages, which provide utilities for form validation, sitemap
+generation, and some other stuff.</p>
+
+<h3>
+<a name="project-layout" class="anchor" href="#project-layout"><span class="octicon octicon-link"></span></a>Project layout</h3>
+
+<p>For the most part, you can lay out your Gadget projects however you want. There
+is, however, a convention, and you can conform to it most easily by installing
+the <code>github.com/redneckbeard/gadget/gdgt</code> subpackage. Using the "new" command,
+you can create a ready-to-compile program with the following directory/file
+structure:</p>
+
+<pre><code>.
+├── app
+│   └── conf.go
+├── controllers
+│   └── home.go
+├── main.go
+├── static
+│   ├── css
+│   ├── img
+│   └── js
+└── templates
+    ├── base.html
+    └── home
+    └── index.html
+</code></pre>
+
+<p>The app package is where you actually have your Gadget configuration and a
+pointer to the app object, so you will end up importing that package in files
+in the controllers package. main.go also imports app, and actually runs the
+thing.</p>
+
+<h3>
+<a name="running-gadget" class="anchor" href="#running-gadget"><span class="octicon octicon-link"></span></a>Running Gadget</h3>
+
+<p>Since your Gadget application is just a Go package, we can build this with <code>go
+install &lt;appname&gt;</code>, and voilà -- we have a single-file web application / HTTP
+server waiting for as <code>$GOPATH/bin/&lt;appname&gt;</code>.</p>
+
+<p>Because there are some files that don't go into the build, and the build is
+just an executable, Gadget needs an absolute path that it can assume as the
+root that all relative filepaths branch off of. In development, this will often
+simply be the current working directory, and that's the default. However, in
+production, you might have your binary and your frontend files in completely
+different locations. For this reason, we can call the <code>&lt;appname&gt;</code> executable
+with a <code>-root</code> flag and point it at whatever path we please.</p>
+
+<p>The command invoked in an upstart job might then look like:</p>
+
+<pre><code>/usr/local/bin/inspector serve -static="/media/" -root=/home/penny/files/ -debug=false
+</code></pre>
+
+<h3>
+<a name="asset-files" class="anchor" href="#asset-files"><span class="octicon octicon-link"></span></a>Asset files</h3>
+
+<p>Gadget assumes that the file root will contain a <code>static</code> directory and that
+you want it to serve the contents thereof as files. By default, it will do so
+at <code>/static/</code>. You can, however, change this to accommodate whatever you have
+against the word "static"... with the <code>-static</code> flag.</p>
+
+<h2>
+<a name="using-this-thing" class="anchor" href="#using-this-thing"><span class="octicon octicon-link"></span></a>Using this thing</h2>
+
+<p>All the concepts here are documented more granularly on
+<a href="http://godoc.org/github.com/redneckbeard/gadget">godoc.org</a>. These are the
+highlights of how to build a Gadget application.</p>
+
+<h2>
+<a name="routing" class="anchor" href="#routing"><span class="octicon octicon-link"></span></a>Routing</h2>
+
+<p>Routes in Gadget are just code. They go in the Configure method of your app in
+app/conf.go. </p>
+
+<p>People love HandlerFuncs. So if you want, you can just route stuff to
+HandlerFuncs.</p>
+
+<div class="highlight highlight-Go"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">Routes</span><span class="p">(</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">HandleFunc</span><span class="p">(</span><span class="s">"robots.txt"</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ServeFile</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="s">"templates/robots.txt"</span><span class="p">)</span> <span class="p">}),</span>
+<span class="p">)</span>
+</pre></div>
+
+<p>If you have lots of routes with a common URL segment, you can factor it out
+with <code>Prefixed</code>.</p>
+
+<div class="highlight highlight-Go"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">Routes</span><span class="p">(</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">Prefixed</span><span class="p">(</span><span class="s">"users"</span><span class="p">,</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nx">HandleFunc</span><span class="p">(</span><span class="s">"friends"</span><span class="p">,</span> <span class="nx">FriendsIndex</span><span class="p">),</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nx">HandleFunc</span><span class="p">(</span><span class="s">"frenemies"</span><span class="p">,</span> <span class="nx">FrenemiesIndex</span><span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+
+<p>In practice, though being able to use HandlerFuncs is very handy, you'll more
+commonly route to RESTful controllers with the <code>Resource</code> method.</p>
+
+<div class="highlight highlight-Go"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">Routes</span><span class="p">(</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">Resource</span><span class="p">(</span><span class="s">"users"</span><span class="p">,</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nx">Resource</span><span class="p">(</span><span class="s">"friends"</span><span class="p">),</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nx">Resource</span><span class="p">(</span><span class="s">"frenemies"</span><span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+
+<p>In this example, "users", "friends", and "frenemies" all reference controllers
+that we've registered with the app. To mount at route at the root of the site,
+there's a special <code>SetIndex</code> method, which is set up for you automatically if
+you use the gdgt project generator.</p>
+
+<div class="highlight highlight-Go"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">Routes</span><span class="p">(</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">SetIndex</span><span class="p">(</span><span class="s">"home"</span><span class="p">),</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">Resource</span><span class="p">(</span><span class="s">"users"</span><span class="p">,</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nx">Resource</span><span class="p">(</span><span class="s">"friends"</span><span class="p">),</span>
+        <span class="nx">app</span><span class="p">.</span><span class="nx">Resource</span><span class="p">(</span><span class="s">"frenemies"</span><span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+
+<h3>
+<a name="controllers" class="anchor" href="#controllers"><span class="octicon octicon-link"></span></a>Controllers</h3>
+
+<p>The strings that are fed to the <code>gadget.Resource</code> calls correspond to the names
+of controllers that we defined in our <code>controllers</code> package. The files in the
+controllers package all declare a <code>gadget.Controller type, embed a pointer to
+</code>gadget.DefaultController` to make it simpler to implement the controller
+interface, and explicitly register that controller with the framework. </p>
+
+<div class="highlight highlight-Go"><pre><span class="kn">package</span> <span class="nx">controllers</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">"github.com/redneckbeard/gadget"</span>
+    <span class="s">"example/app"</span>
+<span class="p">)</span>
+
+<span class="kd">type</span> <span class="nx">MissionController</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="o">*</span><span class="nx">gadget</span><span class="p">.</span><span class="nx">DefaultController</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">MissionController</span><span class="p">)</span> <span class="nx">Index</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">gadget</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">200</span><span class="p">,</span> <span class="p">[]</span><span class="o">&amp;</span><span class="kd">struct</span><span class="p">{</span><span class="nx">Mission</span> <span class="kt">string</span><span class="p">}{{</span><span class="s">"Dr. Claw"</span><span class="p">},{</span><span class="s">"M.A.D. Cat"</span><span class="p">}}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">MissionController</span><span class="p">)</span> <span class="nx">Show</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">gadget</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+    <span class="nx">missionId</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">UrlParams</span><span class="p">[</span><span class="s">"mission_id"</span><span class="p">]</span>
+    <span class="k">return</span> <span class="mi">200</span><span class="p">,</span> <span class="s">"Mission #"</span> <span class="o">+</span> <span class="nx">missionId</span> <span class="o">+</span> <span class="s">": this message will self-destruct."</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">MissionController</span><span class="p">)</span> <span class="nx">ChiefQuimby</span><span class="p">(</span><span class="nx">r</span> <span class="o">*</span><span class="nx">gadget</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kd">interface</span><span class="p">{})</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">200</span><span class="p">,</span> <span class="s">"You've done it again, Gadget! Don't know how you do it!"</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">init</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">Register</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">MissionController</span><span class="p">{})</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>Controller methods have access to a <code>gadget.Request</code> object and return simply
+an HTTP status code and any value at all for the body (more on why in a bit).
+The controller interface requires <code>Index</code>, <code>Show</code>, <code>Create</code>, <code>Update</code>, and
+<code>Destroy</code> methods. Embedding a pointer to a <code>DefaultController</code> means that
+these are all implemented for you. However, <em>this doesn't provide you with
+anything but 404s</em>. If you want to take action in response to a particular verb,
+override the method.</p>
+
+<p>The Gadget router will hit controller methods based on the HTTP verbs that you
+would expect: </p>
+
+<ul>
+<li>
+<code>GET /missions</code> routes to <code>Index</code>
+</li>
+<li>
+<code>GET /missions/\d+</code> routes to <code>Show</code>
+</li>
+<li>
+<code>POST /missions</code> routes <code>Create</code>
+</li>
+<li>
+<code>PUT /missions/\d+</code> routes to <code>Update</code>
+</li>
+<li>
+<code>PATCH /missions/\d+</code> routes to <code>Update</code>
+</li>
+<li>
+<code>DELETE /missions/\d+</code> routes to <code>Destroy</code>
+</li>
+</ul><p>Numeric ids are the default, but if you want something else in your URLs, just
+override <code>func IdPattern() string</code> on your controller.</p>
+
+<p>In addition, any exported method on the controller will be routed to for all
+HTTP verbs. <code>ChiefQuimby</code> above would be called for any verb when the requested
+path was <code>/missions/chief-quimby</code>.</p>
+
+<p>You make a Controller available to the router by passing it to <code>app.Register</code>.
+This is best done in the init function. Gadget doesn't pretend to speak
+perfect English, so it takes the dumbest possible guess at pluralizing your
+controller's name and just tacks an "s" on the end. If inflecting is more
+complicated, define a <code>Plural() string</code> method on your controller.</p>
+
+<h4>
+<a name="action-filters" class="anchor" href="#action-filters"><span class="octicon octicon-link"></span></a>Action filters</h4>
+
+<p>When developing a web application, you frequently have a short-circuit pattern
+common to a number of controller methods -- "404 if the user isn't logged in",
+"Redirect if the user isn't authorized", etc. To accommodate code reuse, Gadget
+controllers allow you to define filters on certain actions. Setting one up in
+the example above might look like this:</p>
+
+<div class="highlight highlight-Go"><pre><span class="kd">func</span> <span class="nx">init</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">c</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">MissionController</span><span class="p">{</span><span class="nx">gadget</span><span class="p">.</span><span class="nx">New</span><span class="p">()}</span>
+    <span class="nx">c</span><span class="p">.</span><span class="nx">Filter</span><span class="p">([]</span><span class="kt">string</span><span class="p">{</span><span class="s">"create"</span><span class="p">,</span> <span class="s">"update"</span><span class="p">,</span> <span class="s">"destroy"</span><span class="p">},</span> <span class="nx">UserIsPenny</span><span class="p">)</span>
+    <span class="nx">gadget</span><span class="p">.</span><span class="nx">Register</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+<p><code>UserIsPenny</code> is just a function with the signature <code>func(r *requests.Request)
+(int, interface{})</code> just like a controller method. If this function returns a
+non-zero status code, the controller method that was filtered will never be
+called. If the filter returns a status code of zero, Gadget will move on to the
+next filter for that action until they are exhausted, and then call the
+controller method.</p>
+
+<h3>
+<a name="request-and-explicit-response-objects" class="anchor" href="#request-and-explicit-response-objects"><span class="octicon octicon-link"></span></a>Request and explicit Response objects</h3>
+
+<h4>
+<a name="request-objects" class="anchor" href="#request-objects"><span class="octicon octicon-link"></span></a>Request objects</h4>
+
+<p><code>gadget.Request</code> embeds <code>http.Request</code> and provides a few convenience facilities:</p>
+
+<ul>
+<li>
+<code>Request.UrlParams</code> is a <code>map[string]string</code> of any ids plucked from route URLs</li>
+<li>
+<code>Request.Params</code> is a <code>map[string]interface{}</code> of GET/POST parameters, or the deserialized POST body of a request sent with <code>Content-Type: application/json</code>
+</li>
+<li>
+<code>Request.User</code> provides a hook into Gadget's lightweight authentication system</li>
+<li>
+<code>Request.Debug()</code> gives you per-request debug status</li>
+</ul><h4>
+<a name="response-objects" class="anchor" href="#response-objects"><span class="octicon octicon-link"></span></a>Response objects</h4>
+
+<p>In most cases, returning a status code and a response body are all you need to
+do to respond to a request. When you do need to set cookies or response
+headers, you can wrap the response body value in <code>gadget.NewResponse</code> and set
+cookies and headers on the value returned.</p>
+
+<div class="highlight highlight-Go"><pre><span class="nx">resp</span> <span class="o">:=</span> <span class="nx">gadget</span><span class="p">.</span><span class="nx">NewResponse</span><span class="p">(</span><span class="nx">responseMap</span><span class="p">)</span>
+<span class="nx">resp</span><span class="p">.</span><span class="nx">AddCookie</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Cookie</span><span class="p">{</span>
+    <span class="nx">Name</span><span class="p">:</span>    <span class="s">"lastVisited"</span><span class="p">,</span>
+    <span class="nx">Value</span><span class="p">:</span>   <span class="nx">r</span><span class="p">.</span><span class="nx">Path</span><span class="p">,</span>
+    <span class="nx">Expires</span><span class="p">:</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Now</span><span class="p">().</span><span class="nx">Add</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Hour</span><span class="p">),</span>
+<span class="p">})</span>
+<span class="k">return</span> <span class="mi">200</span><span class="p">,</span> <span class="nx">resp</span>
+</pre></div>
+
+<h3>
+<a name="brokers" class="anchor" href="#brokers"><span class="octicon octicon-link"></span></a>Brokers</h3>
+
+<p>The <code>interface{}</code> value you that you return from a controller method is by
+default piped through <code>fmt.Sprint</code>. Strings are predictable, as are numbers;
+other types look more like debugging output. However, Gadget has a mechanism
+for transforming those values based on <code>Content-Type</code> or <code>Accept</code> headers. By
+defining Broker functions and assigning them to MIME types, you can make the
+same controller methods speak HTML and JSON.</p>
+
+<div class="highlight highlight-Go"><pre><span class="nx">app</span><span class="p">.</span><span class="nx">Accept</span><span class="p">(</span><span class="s">"application/json"</span><span class="p">).</span><span class="nx">Via</span><span class="p">(</span><span class="nx">gadget</span><span class="p">.</span><span class="nx">JsonBroker</span><span class="p">)</span>
+</pre></div>
+
+<p>JSON and XML processors are included with Gadget. Placing the line above in
+your app's <code>Configure</code> method will make Gadget serialize the body values
+returned from your controller methods when the appropriate headers are found in
+the request.</p>
+
+<p>Subpackage <code>gadget/template</code> implements an HTML Broker that wraps the
+<code>html/template</code> package.</p>
+
+<h3>
+<a name="users" class="anchor" href="#users"><span class="octicon octicon-link"></span></a>Users</h3>
+
+<p>Gadget doesn't have an authentication framework, but it does have hooks for
+plugging one in. It defines: </p>
+
+<ul>
+<li>An interface <code>gadget.User</code> that has a single method, <code>Authenticated() bool</code>
+</li>
+<li>A default anonymous user (<code>Authenticated()</code> always returns false) </li>
+<li>A function type <code>UserIdentifier</code> with the signature <code>func(*Request) User</code>
+</li>
+</ul><p>You define a type that implements <code>gadget.User</code> (presumably for which
+<code>Authenticated()</code> always returns true and then write a <code>UserIdentifier</code> that
+will return either your type or <code>gadget.AnonymousUser</code>. You can then register
+it with the framework by passing it to <code>gadget.IdentifyUsersWith</code>. In your
+controller methods you'll be able to do something like this:</p>
+
+<div class="highlight highlight-Go"><pre><span class="k">if</span> <span class="p">!</span><span class="nx">r</span><span class="p">.</span><span class="nx">User</span><span class="p">.</span><span class="nx">Authenticated</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mi">403</span><span class="p">,</span> <span class="s">"Unauthorized"</span>
+<span class="p">}</span>
+<span class="nx">user</span> <span class="o">:=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">User</span><span class="p">.(</span><span class="o">*</span><span class="nx">models</span><span class="p">.</span><span class="nx">User</span><span class="p">)</span>
+</pre></div>
+
+<h3>
+<a name="debugging" class="anchor" href="#debugging"><span class="octicon octicon-link"></span></a>Debugging</h3>
+
+<p>The "serve" command registered by package <code>github.com/redneckbeard/gadget/env</code>
+defines a debug flag. You can access that flag as <code>env.Debug</code>. You write a lot
+of code inside controller methods, so as a convenience, you can check the value
+of <code>env.Debug</code> by calling <code>Request.Debug</code>.</p>
+
+<p>If you need per-request debug state -- for example, seeing debugging variables
+in the browser for an administrative user -- you can hook into
+<code>Request.Debug()</code> by setting <code>gadget.SetDebugWith</code> to a function you define
+with the signature <code>func(*Request) bool</code>.</p>
+
+<h3>
+<a name="custom-command-line-tools" class="anchor" href="#custom-command-line-tools"><span class="octicon octicon-link"></span></a>Custom command line tools</h3>
+
+<p>Gadget uses <a href="http://github.com/redneckbeard/quimby">Quimby</a> to support multiple
+commands from the same binary. You can just as easily register your own. Follow
+the example in the Quimby README.</p>
+
+<h2>
+<a name="sites-using-gadget" class="anchor" href="#sites-using-gadget"><span class="octicon octicon-link"></span></a>Sites using Gadget</h2>
+
+<p>Gadget is used by <a href="http://farmr.org">farmr.org</a>, New England's 4th most popular
+website about database-driven urban farm management.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/redneckbeard">redneckbeard</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
