@@ -4,21 +4,13 @@ Gadget is a web framework for Go
 [![Build Status](https://travis-ci.org/redneckbeard/gadget.png?branch=master)](https://travis-ci.org/redneckbeard/gadget)
 
 Gadget is a smallish web application framework with a soft spot for content
-negotiation. To install Gadget, just use the go tool.
+negotiation. You can install and all its subpackages at once:
 
 ```
-$ go get github.com/redneckbeard/gadget
+go get -v github.com/redneckbeard/gadget/...
 ```
 
-The gdgt package will install a command that will help you generate Gadget
-projects. You don't have to use it, but it does mean mashing fewer buttons. You
-need Go 1.2 to use it.
-
-```
-$ go get github.com/redneckbeard/gadget/gdgt
-```
-
-Let's create a sample project. I've got some photos I'd like to share with some
+Here's a quick sample project. I've got some photos I'd like to share with some
 friends, so we'll make a photo app. I'm going to run the gdgt tool at the root
 of `$GOPATH/src`.
 
