@@ -15,7 +15,7 @@ type RouteData struct {
 
 type contentType struct {
 	mimes []string
-	app *App
+	app   *App
 }
 
 func (ct *contentType) Via(broker Broker) {

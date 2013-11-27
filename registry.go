@@ -43,9 +43,9 @@ func (a *App) PrintRoutes() {
 }
 
 type App struct {
-	routes []*route
-	Brokers map[string]Broker
-	Controllers    map[string]Controller
+	routes      []*route
+	Brokers     map[string]Broker
+	Controllers map[string]Controller
 }
 
 // Routes registers a variable number of routes with the Gadget router. Arguments to

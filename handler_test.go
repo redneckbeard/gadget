@@ -19,7 +19,7 @@ type handlerApp struct {
 var h *handlerApp
 
 func (s *HandlerSuite) SetUpSuite(c *C) {
-	h = &handlerApp{ &App{} }
+	h = &handlerApp{&App{}}
 	h.Register(&MapController{})
 	h.Register(&ResourceController{})
 	h.Register(&UuidController{})

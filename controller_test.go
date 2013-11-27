@@ -1,8 +1,8 @@
 package gadget
 
 import (
-	. "launchpad.net/gocheck"
 	"github.com/redneckbeard/gadget/strutil"
+	. "launchpad.net/gocheck"
 )
 
 type ControllerSuite struct{}
@@ -14,7 +14,7 @@ type controllerApp struct {
 var ca *controllerApp
 
 func (s *ControllerSuite) SetUpTest(c *C) {
-	ca = &controllerApp{ &App{} }
+	ca = &controllerApp{&App{}}
 	ca.Register(&TestController{})
 }
 

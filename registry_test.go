@@ -7,7 +7,7 @@ import (
 type RegistrySuite struct{}
 
 func (s *RegistrySuite) SetUpSuite(c *C) {
-	r = &registryApp{ &App{} }
+	r = &registryApp{&App{}}
 	r.Register(&FooController{})
 	r.Register(&BarController{})
 	r.Register(&BazController{})
@@ -20,7 +20,6 @@ type registryApp struct {
 }
 
 var r *registryApp
-
 
 type FooController struct {
 	*DefaultController

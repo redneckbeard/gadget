@@ -10,12 +10,12 @@ func Test(t *testing.T) { TestingT(t) }
 
 type RouteSuite struct{}
 
-type routeApp struct { *App }
+type routeApp struct{ *App }
 
 var rta *routeApp
 
 func (s *RouteSuite) SetUpTest(c *C) {
-	rta = &routeApp{ &App{} }
+	rta = &routeApp{&App{}}
 	rta.Register(&URLParamController{})
 	rta.Register(&TellMethodNameController{})
 }

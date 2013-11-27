@@ -16,7 +16,7 @@ type userApp struct {
 var u *userApp
 
 func (s *UserSuite) SetUpTest(c *C) {
-	u = &userApp{ &App{} }
+	u = &userApp{&App{}}
 	u.Register(&AuthStatusController{})
 	u.Routes(u.Resource("auth-status"))
 }

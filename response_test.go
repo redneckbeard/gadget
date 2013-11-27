@@ -19,7 +19,7 @@ var ra *responseApp
 var _ = Suite(&ResponseSuite{})
 
 func (s *ResponseSuite) SetUpSuite(c *C) {
-	ra = &responseApp{ &App{} }
+	ra = &responseApp{&App{}}
 	ra.Register(&ResponseController{})
 	ra.Register(&ImplicitController{})
 	ra.Accept("application/json").Via(JsonBroker)
@@ -132,7 +132,7 @@ func (s *ResponseSuite) TestContentTypeOfCustomHttpResponseMatchesRequestContent
 }
 
 // We should be able to set a cookie and redirect using the technique outlined in the CookieAndRedirect action.
-func (s *ResponseSuite) TestSetCookieAndRedirect (c *C) {
+func (s *ResponseSuite) TestSetCookieAndRedirect(c *C) {
 	handler := ra.Handler()
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/responses/cookie-and-redirect", nil)
@@ -143,4 +143,3 @@ func (s *ResponseSuite) TestSetCookieAndRedirect (c *C) {
 	c.Assert(resp.Code, Equals, 302)
 	c.Assert(resp.Header().Get("Set-Cookie"), Equals, cookie.String())
 }
-

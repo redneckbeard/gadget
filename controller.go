@@ -3,10 +3,10 @@ package gadget
 import (
 	"errors"
 	"fmt"
+	"github.com/redneckbeard/gadget/strutil"
 	"reflect"
 	"regexp"
 	"strings"
-	"github.com/redneckbeard/gadget/strutil"
 )
 
 func init() {

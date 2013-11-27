@@ -13,7 +13,7 @@ type process struct {
 var p *process
 
 func (s *ProcessSuite) SetUpTest(c *C) {
-	p = &process{ &App{} }
+	p = &process{&App{}}
 }
 
 func (s *ProcessSuite) TearDownTest(c *C) {
