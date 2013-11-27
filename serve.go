@@ -6,19 +6,21 @@ import (
 	"net/http"
 )
 
-var app Gadget
+var app gdgt
 
-type Gadget interface {
+type gdgt interface {
 	Configure() error
 	Handler() http.HandlerFunc
-	PrintRoutes()
+	printRoutes()
 	Register(...Controller)
 }
 
-func SetApp(g Gadget) {
+// SetApp registers the top-level app with Gadget.
+func SetApp(g gdgt) {
 	app = g
 }
 
+// Go calls an app's Configure method and runs the command parser.
 func Go() {
 	if app == nil {
 		panic("No call to SetApp found. Ensure that you've imported your app package you are calling SetApp outside of main.")

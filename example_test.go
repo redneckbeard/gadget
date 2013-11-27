@@ -26,7 +26,7 @@ func ExampleRoutes() {
 	ex = &ExampleApp{&App{}}
 	ex.Register(&IndexController{}, &AuthorController{}, &EntryController{})
 	ex.Configure()
-	ex.PrintRoutes()
+	ex.printRoutes()
 	// Output:
 	// ^$ 									 gadget.IndexController
 	// ^writing/authors(?:/(?P<author_id>\d+))?$ 				 gadget.AuthorController

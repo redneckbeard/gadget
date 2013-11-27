@@ -1,7 +1,6 @@
 package gadget
 
 import (
-	"errors"
 	"fmt"
 	"github.com/redneckbeard/gadget/strutil"
 	"reflect"
@@ -13,17 +12,9 @@ func init() {
 	controllerName = regexp.MustCompile(`(\w+)Controller`)
 }
 
-const (
-	INDEX   = "index"
-	SHOW    = "show"
-	CREATE  = "create"
-	UPDATE  = "update"
-	DESTROY = "destroy"
-)
-
 var (
 	controllerName *regexp.Regexp
-	defaultActions = []string{INDEX, SHOW, CREATE, UPDATE, DESTROY}
+	defaultActions = []string{"index", "show", "create", "update", "destroy"}
 )
 
 // Controller is the interface that defines how Gadget applications respond to
@@ -73,7 +64,7 @@ type Controller interface {
 	setActions([][]string)
 }
 
-func NameFromController(c Controller) string {
+func nameFromController(c Controller) string {
 	name := reflect.TypeOf(c).Elem().Name()
 	matches := controllerName.FindStringSubmatch(name)
 	if matches == nil || len(matches) != 2 {
@@ -87,7 +78,7 @@ func pluralOf(c Controller) string {
 	if pluralName != "" {
 		return pluralName
 	}
-	return NameFromController(c) + "s"
+	return nameFromController(c) + "s"
 }
 
 // Register notifies Gadget that you want to use a type as a Controller. It takes
@@ -115,10 +106,10 @@ func (a *App) Register(clist ...Controller) {
 	}
 }
 
-func (a *App) GetController(name string) (Controller, error) {
+func (a *App) getController(name string) (Controller, error) {
 	controller, ok := a.Controllers[name]
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("No controller with label '%s' found", name))
+		return nil, fmt.Errorf("No controller with label '%s' found", name)
 	}
 	return controller, nil
 }

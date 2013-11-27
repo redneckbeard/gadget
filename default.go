@@ -28,19 +28,19 @@ type DefaultController struct {
 // minus the receiver. They are used in calls to Controller.Filter.
 type Filter func(*Request) (int, interface{})
 
-// The default return value of Index is (404, "").
+// Index implements a default return value of is (404, "").
 func (c *DefaultController) Index(r *Request) (int, interface{}) { return 404, "" }
 
-// The default return value of Show is (404, "").
+// Show implements a default return value of is (404, "").
 func (c *DefaultController) Show(r *Request) (int, interface{}) { return 404, "" }
 
-// The default return value of Create is (404, "").
+// Create implements a default return value of is (404, "").
 func (c *DefaultController) Create(r *Request) (int, interface{}) { return 404, "" }
 
-// The default return value of Update is (404, "").
+// Update implements a  default return value of is (404, "").
 func (c *DefaultController) Update(r *Request) (int, interface{}) { return 404, "" }
 
-// The default return value of Destroy is (404, "").
+// Destroy implements a default return value of is (404, "").
 func (c *DefaultController) Destroy(r *Request) (int, interface{}) { return 404, "" }
 
 // IdPattern returns a string that will be used in a regular expression to
@@ -97,7 +97,7 @@ func (c *DefaultController) extraActions() map[string]string {
 }
 
 func (c *DefaultController) extraActionNames() (names []string) {
-	for k, _ := range c.extraActionMap {
+	for k := range c.extraActionMap {
 		names = append(names, k)
 	}
 	return

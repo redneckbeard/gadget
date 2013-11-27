@@ -222,7 +222,7 @@ func AclFilter(r *Request) (status int, body interface{}) {
 }
 
 func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
-	ctrl, _ := rta.GetController("urlparams")
+	ctrl, _ := rta.getController("urlparams")
 	ctrl.Filter([]string{"update"}, AclFilter)
 	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
@@ -233,7 +233,7 @@ func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
 }
 
 func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
-	ctrl, _ := rta.GetController("urlparams")
+	ctrl, _ := rta.getController("urlparams")
 	ctrl.Filter([]string{"update"}, AclFilter)
 	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
@@ -244,7 +244,7 @@ func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
 }
 
 func (s *RouteSuite) TestRespondContinuesAfterNilFilterReturn(c *C) {
-	ctrl, _ := rta.GetController("urlparams")
+	ctrl, _ := rta.getController("urlparams")
 	ctrl.Filter([]string{"update"}, AclFilter)
 	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")

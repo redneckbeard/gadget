@@ -13,6 +13,7 @@ func init() {
 	quimby.Add(&ListRoutes{})
 }
 
+// ListRoutes provides a command to print out all routes registered with an application.
 type ListRoutes struct {
 	*quimby.Flagger
 }
@@ -21,11 +22,12 @@ func (c *ListRoutes) SetFlags() {}
 
 func (c *ListRoutes) Desc() string { return "Displays list of routes registered with Gadget." }
 
+// Run prints all the routes registered with the application.
 func (c *ListRoutes) Run() {
-	app.PrintRoutes()
+	app.printRoutes()
 }
 
-func (a *App) PrintRoutes() {
+func (a *App) printRoutes() {
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 0, '\t', 0)
 
@@ -42,6 +44,7 @@ func (a *App) PrintRoutes() {
 	w.Flush()
 }
 
+// App provides core Gadget functionality.
 type App struct {
 	routes      []*route
 	Brokers     map[string]Broker
@@ -155,7 +158,7 @@ func (a *App) Handler() http.HandlerFunc {
 			response = NewResponse(body)
 		}
 
-		status, final, mime, _ := a.Process(req, status, response.Body, contentType, routeData)
+		status, final, mime, _ := a.process(req, status, response.Body, contentType, routeData)
 
 		response.status = status
 		response.final = final

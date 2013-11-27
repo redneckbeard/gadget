@@ -10,9 +10,11 @@ import (
 	"time"
 )
 
-type DebugChecker func(*Request) bool
+type debugChecker func(*Request) bool
 
-var SetDebugWith DebugChecker = func(r *Request) bool { return false }
+// SetDebugWith by default is a function that always returns false, no matter
+// what request is passed to it.
+var SetDebugWith = func(r *Request) bool { return false }
 
 // Request wraps an *http.Request and adds some Gadget-derived conveniences. The
 // Params map contains either POST data, GET query parameters, or the body of the
@@ -34,6 +36,8 @@ func newRequest(raw *http.Request) *Request {
 	return r
 }
 
+// ContentType is sort of a dishonest method -- it returns the value of an
+// Accept header if present, and falls back to Content-Type.
 func (r *Request) ContentType() string {
 	accept := r.Request.Header.Get("Accept")
 	if accept != "" {
@@ -42,6 +46,8 @@ func (r *Request) ContentType() string {
 	return r.Request.Header.Get("Content-Type")
 }
 
+// Debug returns true if env.Debug is true or if SetDebugWith returns true when
+// passed its receiver r.
 func (r *Request) Debug() bool {
 	return env.Debug || SetDebugWith(r)
 }

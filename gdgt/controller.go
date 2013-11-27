@@ -13,6 +13,7 @@ func init() {
 	quimby.Add(&Controller{})
 }
 
+// Controller provides a command that generates controller files.
 type Controller struct {
 	*quimby.Flagger
 	name string

@@ -20,14 +20,17 @@ func depascal(pascal, separator string) string {
 	return strings.Join(matches, separator)
 }
 
+// IsPascalCase returns true if its argument s is a Pascal-cased string.
 func IsPascalCase(s string) bool {
 	return pascalCase.MatchString(s)
 }
 
+// Hyphenate converts Pascal-cased string to a hyphen-separated string.
 func Hyphenate(pascal string) string {
 	return depascal(pascal, "-")
 }
 
+// Snakify converts a Pascal-cased string to a snake-cased string.
 func Snakify(pascal string) string {
 	return depascal(pascal, "_")
 }

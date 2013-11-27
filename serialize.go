@@ -6,6 +6,7 @@ import (
 	"github.com/redneckbeard/gadget/env"
 )
 
+// JsonBroker attempts to transform an interface{} value into a JSON string.
 func JsonBroker(r *Request, status int, body interface{}, data *RouteData) (int, string) {
 	var (
 		serialized []byte
@@ -22,6 +23,7 @@ func JsonBroker(r *Request, status int, body interface{}, data *RouteData) (int,
 	return status, string(serialized)
 }
 
+// XmlBroker attempts to transform an interface{} value into a serialized XML string.
 func XmlBroker(r *Request, status int, body interface{}, data *RouteData) (int, string) {
 	var (
 		serialized []byte
