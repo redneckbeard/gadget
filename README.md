@@ -4,7 +4,11 @@ Gadget is a web framework for Go
 [![Build Status](https://travis-ci.org/redneckbeard/gadget.png?branch=master)](https://travis-ci.org/redneckbeard/gadget)
 
 Gadget is a smallish web application framework with a soft spot for content
-negotiation. You can install and all its subpackages at once:
+negotiation. It requires a working installation of Go1.1 and a workspace/
+environment variables set up according to [How to Write Go
+Code](http://golang.org/doc/code.html).
+
+You can install and all its subpackages at once:
 
 ```
 go get -v github.com/redneckbeard/gadget/...

@@ -58,13 +58,14 @@ func createControllerFile(projectName, controllerName string) {
 		controllerName = strings.Title(controllerName)
 	}
 	path := filepath.Join(projectName, "controllers", filename + ".go")
+	importPath, _ := getImportPath(projectName)
 	if f, err := os.Create(path); err != nil {
 		fmt.Printf("Unable to create file controllers/%s.go: %s\n", filename, err)
 	} else {
 		defer f.Close()
 		t.Execute(f, map[string]string{
 			"name": controllerName,
-			"project": projectName,
+			"project": importPath,
 		})
 		fmt.Printf("Created %s\n", path)
 	}

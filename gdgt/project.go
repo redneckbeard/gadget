@@ -11,6 +11,26 @@ func init() {
 	quimby.Add(&New{})
 }
 
+func getGoPath(name string) (string, error) {
+	var path string
+	gopath := os.ExpandEnv("$GOPATH")
+	if gopath == "" {
+		return "", fmt.Errorf("GOPATH must be set to use the gdgt tool.")
+	}
+	inGopath := filepath.Join(gopath, "src", "*")
+	current, _ := os.Getwd()
+	if matched, _ := filepath.Match(inGopath, current); matched {
+		path = filepath.Join(current, name)
+	} else {
+		path = filepath.Join(gopath, "src", name)
+	}
+	return path, nil
+}
+
+func getImportPath(name string) (string, error) {
+	return filepath.Rel(filepath.Join(os.ExpandEnv("$GOPATH"), "src"), name)
+}
+
 type New struct {
 	*quimby.Flagger
 	name string
@@ -34,14 +54,14 @@ func (c *New) Run() {
 		}
 		name = args[0]
 	}
-	current, _ := os.Getwd()
-	path, err := filepath.Rel(
-		filepath.Join(os.ExpandEnv("$GOPATH"), "src"),
-		filepath.Join(current, name),
-	)
+
+	path, err := getGoPath(name) 
 	if err != nil {
-		fmt.Println("Projects must be created in the src directory of your GOPATH.")
+		fmt.Println(err)
+		return
 	}
+
+	importPath, _ := getImportPath(path)
 	subdirs := []string{
 		"controllers",
 		"app",
@@ -51,7 +71,7 @@ func (c *New) Run() {
 		"static/js",
 	}
 	for _, subdir := range subdirs {
-		path := filepath.Join(name, subdir)
+		path := filepath.Join(path, subdir)
 		err := os.MkdirAll(path, 0777)
 		if err != nil {
 			fmt.Printf("Could not create directory %s: %s\n", path, err)
@@ -60,21 +80,21 @@ func (c *New) Run() {
 		}
 	}
 	t := getTemplate("main.tpl")
-	if f, err := os.Create(filepath.Join(name, "main.go")); err != nil {
+	if f, err := os.Create(filepath.Join(path, "main.go")); err != nil {
 		fmt.Printf("Unable to create file main.go in %s: %s\n", name, err)
 	} else {
 		defer f.Close()
 		t.Execute(f, map[string]string{
 			"projectName": name,
-			"path": path,
+			"path": importPath,
 		})
-		fmt.Printf("Created %s/main.go\n", name)
+		fmt.Printf("Created %s/main.go\n", path)
 	}
-	copyTemplate("conf.tpl", filepath.Join(name, "app", "conf.go"))
-	copyTemplate("base.html", filepath.Join(name, "templates", "base.html"))
-	copyTemplate("home/index.html", filepath.Join(name, "templates", "home", "index.html"))
-	fmt.Println("Created app/conf.go")
-	createControllerFile(name, "Home")
+	copyTemplate("conf.tpl", filepath.Join(path, "app", "conf.go"))
+	copyTemplate("base.html", filepath.Join(path, "templates", "base.html"))
+	copyTemplate("home/index.html", filepath.Join(path, "templates", "home", "index.html"))
+	fmt.Printf("Created %s/app/conf.go\n", path)
+	createControllerFile(path, "Home")
 }
 
 
