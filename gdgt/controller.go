@@ -38,14 +38,12 @@ func (c *Controller) Run() {
 		name = args[0]
 	}
 	current, _ := os.Getwd()
-	path, err := filepath.Rel(
-		filepath.Join(os.ExpandEnv("$GOPATH"), "src"),
-		filepath.Join(current),
-	)
-	if err != nil {
-		fmt.Println("Projects must be created in the src directory of your GOPATH.")
+	gopath := filepath.Join(os.ExpandEnv("$GOPATH"), "src")
+	if !strings.HasPrefix(current, gopath) {
+		fmt.Println("Controllers must be created in a Gadget project directory.")
+		return
 	}
-	createControllerFile(path, name)
+	createControllerFile(current, name)
 }
 
 func createControllerFile(projectName, controllerName string) {
