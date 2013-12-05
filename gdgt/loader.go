@@ -31,4 +31,5 @@ func copyTemplate(src, dst string) {
 	}
 	projectFile, err := os.Create(dst)
 	io.Copy(projectFile, templateFile)
+	fmt.Println("Created " + dst)
 }

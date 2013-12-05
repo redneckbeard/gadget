@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/redneckbeard/quimby"
 	"github.com/redneckbeard/gadget/strutil"
+	"github.com/redneckbeard/quimby"
 	"os"
 	"path/filepath"
 	"strings"

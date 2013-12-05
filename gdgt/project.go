@@ -91,9 +91,8 @@ func (c *New) Run() {
 		fmt.Printf("Created %s/main.go\n", path)
 	}
 	copyTemplate("conf.tpl", filepath.Join(path, "app", "conf.go"))
-	copyTemplate("base.html", filepath.Join(path, "templates", "base.html"))
-	copyTemplate("404.html", filepath.Join(path, "templates", "404.html"))
-	copyTemplate("home/index.html", filepath.Join(path, "templates", "home", "index.html"))
-	fmt.Printf("Created %s/app/conf.go\n", path)
 	createControllerFile(path, "Home", false)
+	copyTemplate("base.html", filepath.Join(path, "templates", "base.html"))
+	copyTemplate("home/index.html", filepath.Join(path, "templates", "home", "index.html"))
+	copyTemplate("404.html", filepath.Join(path, "templates", "404.html"))
 }
