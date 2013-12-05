@@ -344,7 +344,7 @@ controller methods you'll be able to do something like this:</p>
 </pre></div>
 
 <h3>
-<a name="debugging" class="anchor" href="#debugging"><span class="octicon octicon-link"></span></a>Debugging</h3>
+<a name="debugging-and-logging" class="anchor" href="#debugging-and-logging"><span class="octicon octicon-link"></span></a>Debugging and logging</h3>
 
 <p>The "serve" command registered by package <code>github.com/redneckbeard/gadget/env</code>
 defines a debug flag. You can access that flag as <code>env.Debug</code>. You write a lot
@@ -355,6 +355,12 @@ of <code>env.Debug</code> by calling <code>Request.Debug</code>.</p>
 in the browser for an administrative user -- you can hook into
 <code>Request.Debug()</code> by setting <code>gadget.SetDebugWith</code> to a function you define
 with the signature <code>func(*Request) bool</code>.</p>
+
+<p>The <code>env</code> subpackage also provides some rudimentary logging facilities. <code>env.Log(interface{}...)</code> will write to stdout by default, but a file location can be specified with the <code>-log</code> flag when running the <code>serve</code> command. Basic data about the request/response cycle is automatically logged, and the output looks like this:</p>
+
+<p><code>[04 Dec 13 20:44 EST] "GET / HTTP/1.1" 200 2825</code></p>
+
+<p>(That's time, obvious HTTP stuff, response status code, bytes written.) Similarly to <code>gadget.SetDebugWith</code>, you can override the request logging behavior by assigning a <code>func(r *Request, status, contentLength int) string to</code>gadget.RequestLogger`.</p>
 
 <h3>
 <a name="custom-command-line-tools" class="anchor" href="#custom-command-line-tools"><span class="octicon octicon-link"></span></a>Custom command line tools</h3>
