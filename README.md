@@ -14,7 +14,12 @@ You can install and all its subpackages at once:
 go get -v github.com/redneckbeard/gadget/...
 ```
 
-Here's a quick sample project. I've got some photos I'd like to share with some
+You can read an [overview of how it works][1], or work through the quick sample
+project below.
+
+[1]: http://redneckbeard.github.io/gadget/
+
+Okay. I've got some photos I'd like to share with some
 friends, so we'll make a photo app. I'm going to run the gdgt tool at the root
 of `$GOPATH/src`.
 
