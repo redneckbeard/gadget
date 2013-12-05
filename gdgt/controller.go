@@ -16,7 +16,8 @@ func init() {
 // Controller provides a command that generates controller files.
 type Controller struct {
 	*quimby.Flagger
-	name string
+	name  string
+	stubs bool
 }
 
 func (c *Controller) Desc() string {
@@ -25,6 +26,7 @@ func (c *Controller) Desc() string {
 
 func (c *Controller) SetFlags() {
 	c.StringVar(&c.name, "name", "", "Name of the controller type to create")
+	c.BoolVar(&c.stubs, "stubs", false, "Decides whether the generated controller will have stubs for the 5 standard action methods")
 }
 
 func (c *Controller) Run() {
@@ -43,10 +45,10 @@ func (c *Controller) Run() {
 		fmt.Println("Controllers must be created in a Gadget project directory.")
 		return
 	}
-	createControllerFile(current, name)
+	createControllerFile(current, name, c.stubs)
 }
 
-func createControllerFile(projectName, controllerName string) {
+func createControllerFile(projectName, controllerName string, stubs bool) {
 	var filename string
 	t := getTemplate("controller.tpl")
 	if strutil.IsPascalCase(controllerName) {
@@ -55,15 +57,19 @@ func createControllerFile(projectName, controllerName string) {
 		filename = strings.ToLower(controllerName)
 		controllerName = strings.Title(controllerName)
 	}
-	path := filepath.Join(projectName, "controllers", filename + ".go")
+	path := filepath.Join(projectName, "controllers", filename+".go")
 	importPath, _ := getImportPath(projectName)
 	if f, err := os.Create(path); err != nil {
 		fmt.Printf("Unable to create file controllers/%s.go: %s\n", filename, err)
 	} else {
 		defer f.Close()
-		t.Execute(f, map[string]string{
-			"name": controllerName,
-			"project": importPath,
+		t.Execute(f, struct{
+			Name, Project string
+			Stubs bool
+		}{
+			Name:    controllerName,
+			Project: importPath,
+			Stubs:   stubs,
 		})
 		fmt.Printf("Created %s\n", path)
 	}
