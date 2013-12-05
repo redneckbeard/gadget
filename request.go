@@ -10,11 +10,19 @@ import (
 	"time"
 )
 
-type debugChecker func(*Request) bool
+type (
+	debugChecker func(*Request) bool
+	requestLogger func(*Request, int, int) string
+)
 
 // SetDebugWith by default is a function that always returns false, no matter
 // what request is passed to it.
-var SetDebugWith = func(r *Request) bool { return false }
+var (
+	SetDebugWith = func(r *Request) bool { return false }
+	RequestLogger = func(r *Request, status, contentLength int) string {
+		return fmt.Sprintf(`[%s] "%s %s %s" %d %d`, time.Now().Format(time.RFC822), r.Method, r.URL.Path, r.Proto, status, contentLength)
+	}
+)
 
 // Request wraps an *http.Request and adds some Gadget-derived conveniences. The
 // Params map contains either POST data, GET query parameters, or the body of the
@@ -104,6 +112,5 @@ func (r *Request) setUser() error {
 }
 
 func (r *Request) log(status, contentLength int) {
-	raw := r.Request
-	env.Log(fmt.Sprintf(`[%s] "%s %s %s" %d %d`, time.Now().Format(time.RFC822), r.Method, raw.URL.Path, raw.Proto, status, contentLength))
+	env.Log(RequestLogger(r, status, contentLength))
 }
