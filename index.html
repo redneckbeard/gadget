@@ -360,7 +360,7 @@ with the signature <code>func(*Request) bool</code>.</p>
 
 <p><code>[04 Dec 13 20:44 EST] "GET / HTTP/1.1" 200 2825</code></p>
 
-<p>(That's time, obvious HTTP stuff, response status code, bytes written.) Similarly to <code>gadget.SetDebugWith</code>, you can override the request logging behavior by assigning a <code>func(r *Request, status, contentLength int) string to</code>gadget.RequestLogger`.</p>
+<p>(That's time, obvious HTTP stuff, response status code, bytes written.) Similarly to <code>gadget.SetDebugWith</code>, you can override the request logging behavior by assigning a <code>func(r *Request, status, contentLength int) string</code> to <code>gadget.RequestLogger</code>.</p>
 
 <h3>
 <a name="custom-command-line-tools" class="anchor" href="#custom-command-line-tools"><span class="octicon octicon-link"></span></a>Custom command line tools</h3>
