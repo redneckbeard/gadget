@@ -30,9 +30,13 @@ func (s *TemplateSuite) TestRenderHelper(c *C) {
 	}
 	for _, dir := range templateDirs {
 		TemplatePath = dir
-		context := "context passed to subtemplate"
+		context := struct{
+			Message string
+		}{
+			Message: "context passed to subtemplate",
+		}
 		status, body := TemplateBroker(&gadget.Request{}, 200, context, &gadget.RouteData{"widgets", "index", "GET"})
 		c.Assert(status, Equals, 200)
-		c.Assert(strings.TrimSpace(body), Equals, context)
+		c.Assert(strings.TrimSpace(body), Equals, context.Message)
 	}
 }

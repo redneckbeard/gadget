@@ -56,7 +56,7 @@ func TemplateBroker(r *gadget.Request, status int, body interface{}, data *gadge
 			}
 		}
 		buf := new(bytes.Buffer)
-		err = t.Execute(buf, body)
+		err = t.Execute(buf, context)
 		if err != nil {
 			panic(err)
 		}
