@@ -316,10 +316,31 @@ your app's <code>Configure</code> method will make Gadget serialize the body val
 returned from your controller methods when the appropriate headers are found in
 the request.</p>
 
-<p>Subpackage <code>gadget/template</code> implements an HTML Broker that wraps the
-<code>html/template</code> package.</p>
+<p>Subpackage <code>gadget/templates</code> implements an HTML Broker that wraps the
+<code>html/template</code> package. <code>templates.TemplateBroker</code> attempts to render 
+the body value returned from a controller method as the context of an 
+<code>html/template.Template</code>. It requires adherence to a few simple conventions
+for locating templates:</p>
 
-<h3>
+<ul>
+<li>All templates are inside a subdirectory of the Gadget application's root as defined by <code>templates.TemplatePath</code> ("templates" by default).</li>
+<li>A "templates/base.html" file exists and can be parsed as a Go template; </li>
+<li>Templates will be loaded from a directory matching the lower-cased plural name of the controller and
+the lower-cased name of the action, plus the extension ".html". For example,
+the Show method of a FavoriteController would look for a template
+"templates/favorites/show.html."</li>
+<li>All error codes can also be served via their own templates. Non-200 statuses
+will result in TemplateBroker looking for a "templates/403.html",
+"templates/502.html", etc.</li>
+<li>Special handling is used for 500s when debug mode is on -- when panics are recovered, the stack trace will be shown in the browser. This does not interfere with 500s that you generate yourself.</li>
+</ul><p><code>gadget/templates</code> additionally provides a registry of helper functions. Any function you want to have available to all templates can be added by passing it to <code>templates.AddHelper</code>. The package defines two helpers that are automatically available:</p>
+
+<ul>
+<li>
+<code>request</code> gives you access to the current <code>*gadget.Request</code>;</li>
+<li>
+<code>render</code> allows you to inject subtemplates (i.e. partials, includes, etc.) into the current template. It takes the name of a template, minus the ".html" extension, and the context that you want to pass to the subtemplate. It will first look in the "templates/{{controller}}" subdirectory for the template specified, and fall back to "templates".</li>
+</ul><h3>
 <a name="users" class="anchor" href="#users"><span class="octicon octicon-link"></span></a>Users</h3>
 
 <p>Gadget doesn't have an authentication framework, but it does have hooks for
@@ -361,6 +382,8 @@ with the signature <code>func(*Request) bool</code>.</p>
 <p><code>[04 Dec 13 20:44 EST] "GET / HTTP/1.1" 200 2825</code></p>
 
 <p>(That's time, obvious HTTP stuff, response status code, bytes written.) Similarly to <code>gadget.SetDebugWith</code>, you can override the request logging behavior by assigning a <code>func(r *Request, status, contentLength int) string</code> to <code>gadget.RequestLogger</code>.</p>
+
+<p>Gadget will recover from panics; in debug mode, in returns the stack trace to the client. If debug mode is off, however, it will simply return an empty 500 and log the stack trace via <code>env.Log</code>.</p>
 
 <h3>
 <a name="custom-command-line-tools" class="anchor" href="#custom-command-line-tools"><span class="octicon octicon-link"></span></a>Custom command line tools</h3>
