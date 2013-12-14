@@ -8,7 +8,10 @@ import (
 	"strconv"
 )
 
-var registry = make(template.FuncMap)
+var (
+	registry     = make(template.FuncMap)
+	TemplatePath = "templates"
+)
 
 // AddHelper registers functions with TemplateBroker that will be available in
 // templates during rendering.
@@ -18,7 +21,7 @@ func AddHelper(name string, f interface{}) {
 
 func templatePath(components ...string) string {
 	components[len(components)-1] += ".html"
-	return env.RelPath(append([]string{"templates"}, components...)...)
+	return env.RelPath(append([]string{TemplatePath}, components...)...)
 }
 
 // TemplateBroker attempts to render interface{} value body as the context of a
