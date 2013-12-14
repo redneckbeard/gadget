@@ -1,11 +1,14 @@
 package gadget
 
 import (
+	"strings"
 	"fmt"
+	"github.com/redneckbeard/gadget/env"
 	"github.com/redneckbeard/quimby"
 	"net/http"
 	"os"
 	"reflect"
+	"runtime/debug"
 	"text/tabwriter"
 )
 
@@ -95,6 +98,49 @@ func (a *App) HandleFunc(mount string, handler http.HandlerFunc) *route {
 	return route
 }
 
+func (a *App) match(r *Request) (matched *route, status int, body interface{}, action string) {
+	for _, route := range a.routes {
+		if route.Match(r) != nil {
+			matched = route
+			if matched.controller == nil {
+				return matched, 0, nil, ""
+			}
+			status, body, action := route.Respond(r)
+			return matched, status, body, action
+		}
+	}
+	return nil, 404, nil, ""
+}
+
+func (a *App) write(w http.ResponseWriter, r *Request, matched *route, status int, body interface{}, action string) {
+	var response *Response
+	routeData := &RouteData{
+		Action: action,
+		Verb:   r.Method,
+	}
+	if matched != nil {
+		routeData.ControllerName = pluralOf(matched.controller)
+	}
+	contentType := r.ContentType()
+
+	if resp, ok := body.(*Response); ok {
+		response = resp
+		if ct := response.Headers.Get("Content-Type"); ct != contentType && ct != "" {
+			contentType = ct
+		}
+	} else {
+		response = NewResponse(body)
+	}
+
+	status, final, mime, _ := a.process(r, status, response.Body, contentType, routeData)
+
+	response.status = status
+	response.final = final
+	response.Headers.Set("Content-Type", mime)
+	response.write(w)
+	r.log(status, len(response.final))
+}
+
 // Handler returns a func encapsulating the Gadget router (and corresponding
 // controllers that can be used in a call to http.HandleFunc. Handler must be
 // invoked only after Routes has been called and all Controllers have been
@@ -104,66 +150,39 @@ func (a *App) HandleFunc(mount string, handler http.HandlerFunc) *route {
 // set up http.HandleFunc to use its return value.
 func (a *App) Handler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var (
-			status   int
-			final    string
-			action   string
-			body     interface{}
-			matched  *route
-			response *Response
-		)
+		var final string
 		req := newRequest(r)
-		for _, route := range a.routes {
-			if route.Match(req) != nil {
-				if route.handler != nil {
-					route.handler(w, r)
-					return
+		defer func() {
+			if r := recover(); r != nil {
+				trace := string(debug.Stack())
+				lines := strings.Split(trace, "\n")
+				trace = strings.Join(lines[6:], "\n")
+				if env.Debug {
+					a.write(w, req, nil, 500, trace, "")
+				} else {
+					a.write(w, req, nil, 500, nil, "")
+					env.Log(trace)
 				}
-				matched = route
-				status, body, action = route.Respond(req)
-				if status == 301 || status == 302 {
-					resp, ok := body.(*Response)
-					if ok {
-						final = resp.Body.(string)
-					} else {
-						final = body.(string)
-					}
-					resp.Headers.Set("Location", final)
-					resp.status = status
-					resp.write(w)
-					req.log(status, len(final))
-					return
-				}
-				break
 			}
+		}()
+		matched, status, body, action := a.match(req)
+		if matched != nil && matched.handler != nil {
+			matched.handler(w, r)
+			return
 		}
-		routeData := &RouteData{
-			Action: action,
-			Verb:   r.Method,
-		}
-		if matched == nil {
-			status = 404
-			final = ""
-		} else {
-			routeData.ControllerName = pluralOf(matched.controller)
-		}
-		contentType := req.ContentType()
-
-		if resp, ok := body.(*Response); ok {
-			response = resp
-			if ct := response.Headers.Get("Content-Type"); ct != contentType && ct != "" {
-				contentType = ct
+		if status == 301 || status == 302 {
+			resp, ok := body.(*Response)
+			if ok {
+				final = resp.Body.(string)
+			} else {
+				final = body.(string)
 			}
-		} else {
-			response = NewResponse(body)
+			resp.Headers.Set("Location", final)
+			resp.status = status
+			resp.write(w)
+			req.log(status, len(final))
+			return
 		}
-
-		status, final, mime, _ := a.process(req, status, response.Body, contentType, routeData)
-
-		response.status = status
-		response.final = final
-		response.Headers.Set("Content-Type", mime)
-		response.write(w)
-		req.log(status, len(response.final))
+		a.write(w, req, matched, status, body, action)
 	}
 }

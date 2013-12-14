@@ -74,11 +74,17 @@ func TemplateBroker(r *gadget.Request, status int, body interface{}, data *gadge
 	if status >= 200 && status < 300 {
 		mainTemplatePath = templatePath(data.ControllerName, data.Action)
 	} else {
-		mainTemplatePath = templatePath(strconv.FormatInt(int64(status), 10))
+		if status == 500 && env.Debug {
+			t, _ = template.New("debug").Parse(SERVER_ERROR_TEMPLATE)
+		} else {
+			mainTemplatePath = templatePath(strconv.FormatInt(int64(status), 10))
+		}
 	}
-	_, err = t.ParseFiles(mainTemplatePath)
-	if err != nil {
-		return 500, err.Error()
+	if mainTemplatePath != "" {
+		_, err = t.ParseFiles(mainTemplatePath)
+		if err != nil {
+			return 500, err.Error()
+		}
 	}
 	buf := new(bytes.Buffer)
 	err = t.Execute(buf, body)
