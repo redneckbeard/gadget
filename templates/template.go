@@ -67,6 +67,7 @@ func TemplateBroker(r *gadget.Request, status int, body interface{}, data *gadge
 	for name, helper := range registry {
 		helpers[name] = helper
 	}
+
 	t, err := template.New("base.html").Funcs(helpers).ParseFiles(templatePath("base"))
 	if err != nil {
 		return 404, err.Error()

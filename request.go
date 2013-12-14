@@ -11,14 +11,14 @@ import (
 )
 
 type (
-	debugChecker func(*Request) bool
+	debugChecker  func(*Request) bool
 	requestLogger func(*Request, int, int) string
 )
 
 // SetDebugWith by default is a function that always returns false, no matter
 // what request is passed to it.
 var (
-	SetDebugWith = func(r *Request) bool { return false }
+	SetDebugWith  = func(r *Request) bool { return false }
 	RequestLogger = func(r *Request, status, contentLength int) string {
 		return fmt.Sprintf(`[%s] "%s %s %s" %d %d`, time.Now().Format(time.RFC822), r.Method, r.URL.Path, r.Proto, status, contentLength)
 	}

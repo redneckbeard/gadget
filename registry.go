@@ -1,7 +1,6 @@
 package gadget
 
 import (
-	"strings"
 	"fmt"
 	"github.com/redneckbeard/gadget/env"
 	"github.com/redneckbeard/quimby"
@@ -9,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"runtime/debug"
+	"strings"
 	"text/tabwriter"
 )
 

@@ -3,15 +3,15 @@ package sitemap
 import (
 	"encoding/xml"
 	"net/url"
-	"time"
 	"path"
+	"time"
 )
 
 const NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 
 var (
-	Host string
-	urlSets  = make(map[string]*UrlSet)
+	Host    string
+	urlSets = make(map[string]*UrlSet)
 )
 
 func Add(name string, urls ...*Url) {

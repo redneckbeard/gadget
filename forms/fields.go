@@ -120,7 +120,7 @@ func (field *IntField) Clean() {
 		field.Value = int64(field.Data.(int))
 	case float64:
 		n := field.Data.(float64)
-		if n - float64(int(n)) == 0.0 {
+		if n-float64(int(n)) == 0.0 {
 			field.Value = int64(n)
 		} else {
 			field.SetError(field.GetMessage("type"))

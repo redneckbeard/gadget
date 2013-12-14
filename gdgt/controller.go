@@ -63,9 +63,9 @@ func createControllerFile(projectName, controllerName string, stubs bool) {
 		fmt.Printf("Unable to create file controllers/%s.go: %s\n", filename, err)
 	} else {
 		defer f.Close()
-		t.Execute(f, struct{
+		t.Execute(f, struct {
 			Name, Project string
-			Stubs bool
+			Stubs         bool
 		}{
 			Name:    controllerName,
 			Project: importPath,

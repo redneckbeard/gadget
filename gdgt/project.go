@@ -55,7 +55,7 @@ func (c *New) Run() {
 		name = args[0]
 	}
 
-	path, err := getGoPath(name) 
+	path, err := getGoPath(name)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -86,7 +86,7 @@ func (c *New) Run() {
 		defer f.Close()
 		t.Execute(f, map[string]string{
 			"projectName": name,
-			"path": importPath,
+			"path":        importPath,
 		})
 		fmt.Printf("Created %s/main.go\n", path)
 	}

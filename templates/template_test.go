@@ -30,7 +30,7 @@ func (s *TemplateSuite) TestRenderHelper(c *C) {
 	}
 	for _, dir := range templateDirs {
 		TemplatePath = dir
-		context := struct{
+		context := struct {
 			Message string
 		}{
 			Message: "context passed to subtemplate",

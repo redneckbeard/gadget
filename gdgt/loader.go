@@ -1,11 +1,11 @@
 package main
 
 import (
-	"os"
-	"text/template"
-	"path/filepath"
-	"io"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"text/template"
 )
 
 func templatePath(name string) string {

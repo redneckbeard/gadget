@@ -13,10 +13,10 @@ var (
 	root, staticPrefix, logFilePath, port string
 	logger                                *log.Logger
 	// Debug is set via the -debug flag for the serve command.
-	Debug                                 bool
+	Debug bool
 	// Handler comes from calling Handler() on a gadget.App object. It's used by the serve command to run the server.
-	Handler                               http.HandlerFunc
-	configured                            bool
+	Handler    http.HandlerFunc
+	configured bool
 )
 
 func init() {
@@ -24,7 +24,7 @@ func init() {
 }
 
 // The Serve command makes it easy to run Gadget applications.
-type Serve struct{
+type Serve struct {
 	*quimby.Flagger
 }
 
