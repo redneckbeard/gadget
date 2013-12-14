@@ -2,6 +2,7 @@ package templates
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/redneckbeard/gadget"
 	"github.com/redneckbeard/gadget/env"
 	"html/template"
@@ -38,9 +39,30 @@ func templatePath(components ...string) string {
 // will result in TemplateBroker looking for a "templates/403.html",
 // "templates/502.html", etc.
 func TemplateBroker(r *gadget.Request, status int, body interface{}, data *gadget.RouteData) (int, string) {
-	helpers := template.FuncMap{
-		"request": func() *gadget.Request { return r },
+	var helpers = make(template.FuncMap)
+	helpers["request"] = func() *gadget.Request {
+		return r
 	}
+	helpers["render"] = func(templateName string, context interface{}) template.HTML {
+		var (
+			t   *template.Template
+			err error
+		)
+		t, err = template.New(templateName + ".html").Funcs(helpers).ParseFiles(templatePath(data.ControllerName, templateName))
+		if err != nil {
+			t, err = template.New(templateName + ".html").Funcs(helpers).ParseFiles(templatePath(templateName))
+			if err != nil {
+				panic(fmt.Sprintf("Could not locate subtemplate at %s or %s", templatePath(data.ControllerName, templateName), templatePath(templateName)))
+			}
+		}
+		buf := new(bytes.Buffer)
+		err = t.Execute(buf, body)
+		if err != nil {
+			panic(err)
+		}
+		return template.HTML(string(buf.Bytes()))
+	}
+
 	for name, helper := range registry {
 		helpers[name] = helper
 	}
