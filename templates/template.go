@@ -46,7 +46,7 @@ func TemplateBroker(r *gadget.Request, status int, body interface{}, data *gadge
 		return 404, err.Error()
 	}
 	var mainTemplatePath string
-	if status == 200 {
+	if status >= 200 && status < 300 {
 		mainTemplatePath = templatePath(data.ControllerName, data.Action)
 	} else {
 		mainTemplatePath = templatePath(strconv.FormatInt(int64(status), 10))
