@@ -7,6 +7,7 @@ import (
 	"github.com/redneckbeard/gadget/env"
 	"html/template"
 	"strconv"
+	"text/template/parse"
 )
 
 var (
@@ -84,6 +85,15 @@ func TemplateBroker(r *gadget.Request, status int, body interface{}, data *gadge
 		_, err = t.ParseFiles(mainTemplatePath)
 		if err != nil {
 			return 500, err.Error()
+		}
+		// fill in any undefined templates that are called in base
+		for _, node := range t.Tree.Root.Nodes {
+			if node.Type() == parse.NodeTemplate {
+				tnode := node.(*parse.TemplateNode)
+				if subt := t.Lookup(tnode.Name); subt == nil {
+					t.New(tnode.Name).Parse("")
+				}
+			}
 		}
 	}
 	buf := new(bytes.Buffer)

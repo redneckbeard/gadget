@@ -1,10 +1,10 @@
 package templates
 
 import (
-	. "launchpad.net/gocheck"
 	"github.com/redneckbeard/gadget"
-	"testing"
+	. "launchpad.net/gocheck"
 	"strings"
+	"testing"
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -39,4 +39,13 @@ func (s *TemplateSuite) TestRenderHelper(c *C) {
 		c.Assert(status, Equals, 200)
 		c.Assert(strings.TrimSpace(body), Equals, context.Message)
 	}
+}
+
+// Templates are successfully rendered if they do not define templates invoked by the base template
+func (s *TemplateSuite) TestMissingDefine(c *C) {
+	TemplatePath = "testdata/define"
+	context := "simple"
+	status, body := TemplateBroker(&gadget.Request{}, 200, context, &gadget.RouteData{"widgets", "index", "GET"})
+	c.Assert(status, Equals, 200)
+	c.Assert(strings.TrimSpace(body), Equals, context)
 }
