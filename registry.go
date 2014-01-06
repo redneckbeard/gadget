@@ -176,6 +176,7 @@ func (a *App) Handler() http.HandlerFunc {
 				final = resp.Body.(string)
 			} else {
 				final = body.(string)
+				resp = NewResponse(final)
 			}
 			resp.Headers.Set("Location", final)
 			resp.status = status
