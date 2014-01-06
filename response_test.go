@@ -59,6 +59,10 @@ func (c *ResponseController) CookieAndRedirect(*Request) (int, interface{}) {
 	return 302, response
 }
 
+func (c *ResponseController) RedirectWithString(*Request) (int, interface{}) {
+	return 301, "/somewhere"
+}
+
 type ImplicitController struct {
 	*DefaultController
 }
@@ -142,4 +146,16 @@ func (s *ResponseSuite) TestSetCookieAndRedirect(c *C) {
 
 	c.Assert(resp.Code, Equals, 302)
 	c.Assert(resp.Header().Get("Set-Cookie"), Equals, cookie.String())
+}
+
+func (s *ResponseSuite) TestRedirectWithString(c *C) {
+	handler := ra.Handler()
+
+	req, err := http.NewRequest("GET", "http://127.0.0.1:8000/responses/redirect-with-string", nil)
+	c.Assert(err, IsNil)
+	resp := httptest.NewRecorder()
+	handler(resp, req)
+
+	c.Assert(resp.Code, Equals, 301)
+	c.Assert(resp.Header().Get("Location"), Equals, "/somewhere")
 }
