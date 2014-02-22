@@ -26,6 +26,18 @@ func templatePath(components ...string) string {
 	return env.RelPath(append([]string{TemplatePath}, components...)...)
 }
 
+func loadWithRootFallback(templateName, controllerName string, helpers template.FuncMap) (*template.Template, error) {
+	t, err := template.New(templateName + ".html").Funcs(helpers).ParseFiles(templatePath(controllerName, templateName))
+	env.Log(controllerName, templateName, err)
+	if err != nil {
+		t, err = template.New(templateName + ".html").Funcs(helpers).ParseFiles(templatePath(templateName))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return t, nil
+}
+
 // TemplateBroker attempts to render interface{} value body as the context of a
 // html/template.Template. It requires adherence to a few simple conventions
 // for locating templates: 1) all templates are inside a "templates" directory
@@ -49,12 +61,9 @@ func TemplateBroker(r *gadget.Request, status int, body interface{}, data *gadge
 			t   *template.Template
 			err error
 		)
-		t, err = template.New(templateName + ".html").Funcs(helpers).ParseFiles(templatePath(data.ControllerName, templateName))
+		t, err = loadWithRootFallback(templateName, data.ControllerName, helpers)
 		if err != nil {
-			t, err = template.New(templateName + ".html").Funcs(helpers).ParseFiles(templatePath(templateName))
-			if err != nil {
-				panic(fmt.Sprintf("Could not locate subtemplate at %s or %s", templatePath(data.ControllerName, templateName), templatePath(templateName)))
-			}
+			panic(fmt.Sprintf("Could not locate subtemplate at %s or %s", templatePath(data.ControllerName, templateName), templatePath(templateName)))
 		}
 		buf := new(bytes.Buffer)
 		err = t.Execute(buf, context)
@@ -68,7 +77,7 @@ func TemplateBroker(r *gadget.Request, status int, body interface{}, data *gadge
 		helpers[name] = helper
 	}
 
-	t, err := template.New("base.html").Funcs(helpers).ParseFiles(templatePath("base"))
+	t, err := loadWithRootFallback("base", data.ControllerName, helpers)
 	if err != nil {
 		return 404, err.Error()
 	}
