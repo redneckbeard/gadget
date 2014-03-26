@@ -51,7 +51,7 @@ func (r *Request) ContentType() string {
 	if accept != "" {
 		return accept
 	}
-	return r.Request.Header.Get("Content-Type")
+	return r.contentType()
 }
 
 // Debug returns true if env.Debug is true or if SetDebugWith returns true when
@@ -70,9 +70,13 @@ func unpackValues(params map[string]interface{}, values map[string][]string) {
 	}
 }
 
+func (r *Request) contentType() string {
+	return strings.Split(r.Request.Header.Get("Content-Type"), ";")[0]
+}
+
 func (r *Request) setParams() {
 	params := make(map[string]interface{})
-	switch ct := r.Request.Header.Get("Content-Type"); {
+	switch ct := r.contentType(); {
 	case ct == "application/json":
 		if r.Request.Body != nil {
 			raw, err := ioutil.ReadAll(r.Request.Body)
