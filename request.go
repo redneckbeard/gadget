@@ -36,6 +36,7 @@ type Request struct {
 	Path      string
 	UrlParams map[string]string
 	User      User
+	RawJson   []byte
 }
 
 func newRequest(raw *http.Request) *Request {
@@ -60,6 +61,10 @@ func (r *Request) Debug() bool {
 	return env.Debug || SetDebugWith(r)
 }
 
+func (r *Request) Unmarshal(i interface{}) error {
+	return json.Unmarshal(r.RawJson, i)
+}
+
 func unpackValues(params map[string]interface{}, values map[string][]string) {
 	for k, v := range values {
 		if len(v) == 1 {
@@ -78,13 +83,14 @@ func (r *Request) setParams() {
 	params := make(map[string]interface{})
 	switch ct := r.contentType(); {
 	case ct == "application/json":
-		if r.Request.Body != nil {
-			raw, err := ioutil.ReadAll(r.Request.Body)
-			defer r.Request.Body.Close()
+		if r.Body != nil {
+			raw, err := ioutil.ReadAll(r.Body)
+			defer r.Body.Close()
 			if err != nil {
 				return
 			}
 			err = json.Unmarshal(raw, &params)
+			r.RawJson = raw
 			if err != nil {
 				env.Log("Unable to deserialize JSON payload: ", err, string(raw))
 				return
