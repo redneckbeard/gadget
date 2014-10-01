@@ -169,7 +169,12 @@ func Copy(f Form, target interface{}) error {
 			if !targetField.CanSet() {
 				return errors.New(`Cannot set value on "%s" field`)
 			}
-			field.Copy(targetField)
+			if customCopy, ok := reflect.TypeOf(f).MethodByName("Copy" + name); ok {
+				args := []reflect.Value{reflect.ValueOf(f), reflect.ValueOf(targetField)}
+				customCopy.Func.Call(args)
+			} else {
+				field.Copy(targetField)
+			}
 		}
 	}
 	return nil
