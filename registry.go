@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"regexp"
 	"runtime/debug"
 	"strings"
 	"text/tabwriter"
@@ -61,6 +62,13 @@ func (a *App) Routes(rtes ...*route) {
 	for _, r := range rtes {
 		a.routes = append(a.routes, r.flatten()...)
 	}
+}
+
+func (a *App) Host(hostname string, rtes ...*route) *route {
+	rte := &route{}
+	rte.hostname = regexp.MustCompile("^" + hostname + "$")
+	rte.subroutes = rtes
+	return rte
 }
 
 // SetIndex creates a route that maps / to the specified controller.

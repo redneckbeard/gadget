@@ -9,11 +9,11 @@ import (
 )
 
 type route struct {
-	segment                                    string
-	indexPattern, objectPattern, actionPattern *regexp.Regexp
-	handler                                    http.HandlerFunc
-	controller                                 Controller
-	subroutes                                  []*route
+	segment                                              string
+	indexPattern, objectPattern, actionPattern, hostname *regexp.Regexp
+	handler                                              http.HandlerFunc
+	controller                                           Controller
+	subroutes                                            []*route
 }
 
 func (rte *route) String() string {
@@ -57,6 +57,7 @@ func (rte *route) flatten() []*route {
 		flattened = append(flattened, rte)
 	}
 	for _, r := range rte.subroutes {
+		r.hostname = rte.hostname
 		flattened = append(flattened, r.flatten()...)
 	}
 	return flattened
@@ -75,6 +76,10 @@ func (a *App) newRoute(segment string, handler http.HandlerFunc) *route {
 }
 
 func (rte *route) Match(r *Request) *regexp.Regexp {
+	host := strings.Split(r.Host, ":")[0]
+	if rte.hostname != nil && !rte.hostname.MatchString(host) {
+		return nil
+	}
 	switch {
 	case rte.actionPattern != nil && rte.actionPattern.MatchString(r.Path):
 		return rte.actionPattern
