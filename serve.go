@@ -11,8 +11,9 @@ var app gdgt
 type gdgt interface {
 	Configure() error
 	Handler() http.HandlerFunc
-	printRoutes()
 	Register(...Controller)
+	printRoutes()
+	GetRoutes() []*route
 }
 
 // SetApp registers the top-level app with Gadget.

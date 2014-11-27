@@ -14,6 +14,7 @@ type route struct {
 	handler                                              http.HandlerFunc
 	controller                                           Controller
 	subroutes                                            []*route
+	isRoot                                               bool
 }
 
 func (rte *route) String() string {
@@ -24,20 +25,18 @@ func (rte *route) String() string {
 }
 
 func (rte *route) buildPatterns(prefix string) {
-	// Don't bother generating fancy regexps if we're looking at '/'
-	if rte.segment == "" {
-		rte.indexPattern = regexp.MustCompile(`^$`)
-	} else {
-		basePattern := prefix + rte.segment
-		rte.indexPattern = regexp.MustCompile("^" + basePattern + "$")
-		if rte.controller != nil {
-			patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, strings.Replace(nameFromController(rte.controller), "-", "_", -1), rte.controller.IdPattern())
-			rte.objectPattern = regexp.MustCompile(patternWithId)
-			actions := rte.controller.extraActionNames()
-			if len(actions) > 0 {
-				actionPatternString := fmt.Sprintf(`^%s/(?:%s)$`, basePattern, strings.Join(actions, "|"))
-				rte.actionPattern = regexp.MustCompile(actionPatternString)
-			}
+	if rte.isRoot && prefix != "" {
+		prefix = prefix[:len(prefix)-1]
+	}
+	basePattern := prefix + rte.segment
+	rte.indexPattern = regexp.MustCompile("^" + basePattern + "$")
+	if rte.controller != nil {
+		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, strings.Replace(nameFromController(rte.controller), "-", "_", -1), rte.controller.IdPattern())
+		rte.objectPattern = regexp.MustCompile(patternWithId)
+		actions := rte.controller.extraActionNames()
+		if len(actions) > 0 {
+			actionPatternString := fmt.Sprintf(`^%s/(?:%s)$`, basePattern, strings.Join(actions, "|"))
+			rte.actionPattern = regexp.MustCompile(actionPatternString)
 		}
 	}
 	// Calls to Prefixed generate routes without controllers, and the value of prefix is already all set for those

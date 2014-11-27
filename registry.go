@@ -64,11 +64,20 @@ func (a *App) Routes(rtes ...*route) {
 	}
 }
 
+func (a *App) GetRoutes() []*route {
+	return a.routes
+}
+
 func (a *App) Host(hostname string, rtes ...*route) *route {
 	rte := &route{}
 	rte.hostname = regexp.MustCompile("^" + hostname + "$")
 	rte.subroutes = rtes
 	return rte
+}
+
+func (a *App) Mount(mountpoint string, app gdgt) *route {
+	app.Configure()
+	return a.Prefixed(mountpoint, app.GetRoutes()...)
 }
 
 // SetIndex creates a route that maps / to the specified controller.
@@ -77,6 +86,7 @@ func (a *App) Host(hostname string, rtes ...*route) *route {
 func (a *App) SetIndex(controllerName string) *route {
 	route := a.newRoute(controllerName, nil)
 	route.segment = ""
+	route.isRoot = true
 	route.buildPatterns("")
 	return route
 }
