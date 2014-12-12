@@ -1,17 +1,19 @@
 package env
 
 import (
-	"github.com/redneckbeard/quimby"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/redneckbeard/quimby"
 )
 
 var (
 	root, staticPrefix, logFilePath, port string
 	logger                                *log.Logger
+	messages                              = make(chan []interface{})
 	// Debug is set via the -debug flag for the serve command.
 	Debug bool
 	// Handler comes from calling Handler() on a gadget.App object. It's used by the serve command to run the server.
@@ -22,6 +24,7 @@ var (
 func init() {
 	quimby.Add(&Serve{})
 }
+
 
 // The Serve command makes it easy to run Gadget applications.
 type Serve struct {
@@ -66,6 +69,11 @@ func (s *Serve) Run() {
 		writer = os.Stdout
 	}
 	logger = log.New(writer, "", 0)
+	go func() {
+		for msg := range messages {
+			logger.Println(msg...)
+		}
+	}()
 	serveStatic()
 	http.HandleFunc("/", Handler)
 	Log("Running Gadget at 0.0.0.0:" + port + "...")
@@ -91,7 +99,5 @@ func Open(path string) (*os.File, error) {
 
 // Log writes arguments v as a single line to the default logger.
 func Log(v ...interface{}) {
-	if logger != nil {
-		logger.Println(v...)
-	}
+	go func() { messages <- v }()
 }
