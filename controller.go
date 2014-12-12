@@ -54,7 +54,7 @@ type Controller interface {
 	Update(r *Request) (int, interface{})
 	Destroy(r *Request) (int, interface{})
 
-	Filter(verbs []string, filter Filter)
+	Filter(filter Filter, verbs ...string)
 	IdPattern() string
 	Plural() string
 

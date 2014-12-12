@@ -69,5 +69,5 @@ func F(r *Request) (int, interface{}) {
 //controller.Filter("missing", Filter) should panic if the controller has no method "missing"
 func (s *ControllerSuite) TestControllerfiltermissingFilterShouldPanicControllerHasNoMethodMissing(c *C) {
 	ctlr, _ := ca.getController("tests")
-	c.Assert(func() { ctlr.Filter([]string{"missing"}, F) }, PanicMatches, "Unable to add filter for 'missing' -- no such action")
+	c.Assert(func() { ctlr.Filter(F, "missing") }, PanicMatches, "Unable to add filter for 'missing' -- no such action")
 }

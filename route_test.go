@@ -223,7 +223,7 @@ func AclFilter(r *Request) (status int, body interface{}) {
 
 func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
 	ctrl, _ := rta.getController("urlparams")
-	ctrl.Filter([]string{"update"}, AclFilter)
+	ctrl.Filter(AclFilter, "update")
 	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/urlparams/10", nil)
@@ -234,7 +234,7 @@ func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
 
 func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
 	ctrl, _ := rta.getController("urlparams")
-	ctrl.Filter([]string{"update"}, AclFilter)
+	ctrl.Filter(AclFilter, "update")
 	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/urlparams/10", nil)
@@ -245,7 +245,7 @@ func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
 
 func (s *RouteSuite) TestRespondContinuesAfterNilFilterReturn(c *C) {
 	ctrl, _ := rta.getController("urlparams")
-	ctrl.Filter([]string{"update"}, AclFilter)
+	ctrl.Filter(AclFilter, "update")
 	r := rta.newRoute("urlparams", nil)
 	r.buildPatterns("")
 	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/urlparams/11", nil)

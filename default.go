@@ -63,13 +63,13 @@ func (c *DefaultController) Plural() string { return "" }
 // with the Filter.
 //
 // 	c := &PostController{}
-// 	c.Filter([]string{"create", "update", "destroy"}, func(r *gadget.Request) (int, interface{}) {
+// 	gadget.Register(c)
+// 	c.Filter(func(r *gadget.Request) (int, interface{}) {
 // 		if !r.User.Authenticated() {
 // 			return 403, "Verboten"
 // 		}
-// 	}
-// 	gadget.Register(c)
-func (c *DefaultController) Filter(verbs []string, filter Filter) {
+// 	}, "create", "update", "destroy")
+func (c *DefaultController) Filter(filter Filter, verbs ...string) {
 	if c.filters == nil {
 		panic("Calls to Filter must be made after a controller is registered")
 	}
