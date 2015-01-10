@@ -1,11 +1,13 @@
 package env
 
 import (
+	"bufio"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/redneckbeard/quimby"
 )
@@ -14,6 +16,7 @@ var (
 	root, staticPrefix, logFilePath, port string
 	logger                                *log.Logger
 	messages                              = make(chan []interface{})
+	envVars                               map[string]string
 	// Debug is set via the -debug flag for the serve command.
 	Debug bool
 	// Handler comes from calling Handler() on a gadget.App object. It's used by the serve command to run the server.
@@ -24,7 +27,6 @@ var (
 func init() {
 	quimby.Add(&Serve{})
 }
-
 
 // The Serve command makes it easy to run Gadget applications.
 type Serve struct {
@@ -100,4 +102,25 @@ func Open(path string) (*os.File, error) {
 // Log writes arguments v as a single line to the default logger.
 func Log(v ...interface{}) {
 	go func() { messages <- v }()
+}
+
+func Get(varname string) string {
+	if Debug {
+		if envVars == nil {
+			envVars = make(map[string]string)
+			f, err := Open(".env")
+			defer f.Close()
+			if err != nil {
+				return ""
+			}
+			scanner := bufio.NewScanner(f)
+			for scanner.Scan() {
+				text := scanner.Text()
+				pair := strings.SplitN(text, "=", 2)
+				envVars[pair[0]] = pair[1]
+			}
+		}
+		return envVars[varname]
+	}
+	return os.Getenv(varname)
 }
