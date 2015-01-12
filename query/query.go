@@ -2,60 +2,71 @@ package query
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
-
-	"github.com/jmoiron/sqlx"
 )
 
-func Query(db *sqlx.DB, model interface{}) *Q {
-	var (
-		tableName string
-		columns   []string
-	)
-	t := reflect.TypeOf(model)
-	for k, _ := range db.Mapper.TypeMap(t) {
-		if k != "id" {
-			columns = append(columns, k)
-		}
-	}
-	tableName = strings.ToLower(t.Name()) + "s"
-	return &Q{TableName: tableName, Columns: columns}
+// Insert returns a templated INSERT query for the given table name based on
+// the field names in the corresponding struct using the SQLx
+// Named(Query|ExecStmt) bindvar syntax.
+func Insert(table string) string { return tables[table].insert() }
+
+// Insert returns a templated UPDATE query for the given table name based on
+// the field names in the corresponding struct using the SQLx
+// Named(Query|ExecStmt) bindvar syntax.
+func Update(table string) string { return tables[table].update() }
+
+// Insert returns a templated DELETE query for the given table name based on
+// the field names in the corresponding struct using the SQLx
+// Named(Query|ExecStmt) bindvar syntax.
+func Delete(table string) string { return tables[table].delete() }
+
+// Insert returns a templated SELECT ... LIMIT 1 query for the given table name
+// based on the field names in the corresponding struct using the SQLx
+// Named(Query|ExecStmt) bindvar syntax.
+func Get(table string) string { return tables[table].get() }
+
+// Insert returns a templated SELECT query for the given table name based on
+// the field names in the corresponding struct using the SQLx
+// Named(Query|ExecStmt) bindvar syntax.
+func Select(table string) string { return tables[table]._select() }
+
+// Columns returns a slice of strings listing the names of columns expected
+// given the struct registered with name table.
+func Columns(table string) []string { return tables[table].columns }
+
+type qwery struct {
+	tableName string
+	columns   []string
 }
 
-type Q struct {
-	TableName string
-	Columns   []string
-}
-
-func (q *Q) Insert() string {
+func (q *qwery) insert() string {
 	template := "INSERT INTO %s (%s) VALUES (%s) RETURNING *"
-	columns := strings.Join(q.Columns, ", ")
-	values := strings.Join(stringMap(q.Columns, func(s string) string {
+	columns := strings.Join(q.columns, ", ")
+	values := strings.Join(stringMap(q.columns, func(s string) string {
 		return ":" + s
 	}), ", ")
-	return fmt.Sprintf(template, q.TableName, columns, values)
+	return fmt.Sprintf(template, q.tableName, columns, values)
 }
 
-func (q *Q) Update() string {
+func (q *qwery) update() string {
 	template := "UPDATE %s SET %s WHERE id=:id"
-	set := strings.Join(stringMap(q.Columns, func(s string) string {
+	set := strings.Join(stringMap(q.columns, func(s string) string {
 		return fmt.Sprintf(":%s=%s", s, s)
 	}), ", ")
-	return fmt.Sprintf(template, q.TableName, set)
+	return fmt.Sprintf(template, q.tableName, set)
 }
 
-func (q *Q) Delete() string {
+func (q *qwery) delete() string {
 	template := "DELETE FROM %s WHERE id=:id"
-	return fmt.Sprintf(template, q.TableName)
+	return fmt.Sprintf(template, q.tableName)
 }
 
-func (q *Q) Get() string {
-	return fmt.Sprintf("SELECT * FROM %s %%s LIMIT 1", q.TableName)
+func (q *qwery) get() string {
+	return fmt.Sprintf("SELECT * FROM %s %%s LIMIT 1", q.tableName)
 }
 
-func (q *Q) Select() string {
-	return fmt.Sprintf("SELECT * FROM %s %%s", q.TableName)
+func (q *qwery) _select() string {
+	return fmt.Sprintf("SELECT * FROM %s %%s", q.tableName)
 }
 
 type mapper func(string) string

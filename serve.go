@@ -1,9 +1,10 @@
 package gadget
 
 import (
+	"net/http"
+
 	"github.com/redneckbeard/gadget/env"
 	"github.com/redneckbeard/quimby"
-	"net/http"
 )
 
 var app gdgt
