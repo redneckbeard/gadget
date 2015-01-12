@@ -17,6 +17,7 @@ var (
 	root, staticPrefix, logFilePath, port string
 	logger                                *log.Logger
 	messages                              = make(chan []interface{})
+	Booting                               = make(chan bool)
 	envVars                               map[string]string
 	// Debug is set via the -debug flag for the serve command.
 	Debug bool
@@ -79,6 +80,7 @@ func (s *Serve) Run() {
 			logger.Println(msg...)
 		}
 	}()
+	close(Booting)
 	serveStatic()
 	http.HandleFunc("/", Handler)
 	Log("Running Gadget at 0.0.0.0:" + port + "...")
