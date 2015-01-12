@@ -2,6 +2,7 @@ package env
 
 import (
 	"bufio"
+	"flag"
 	"io"
 	"log"
 	"net/http"
@@ -25,6 +26,9 @@ var (
 )
 
 func init() {
+	quimby.Global = func(f *flag.FlagSet) {
+		f.BoolVar(&Debug, "debug", true, "Sets the env.Debug value within Gadget.")
+	}
 	quimby.Add(&Serve{})
 }
 
@@ -43,7 +47,6 @@ func (s *Serve) SetFlags() {
 	s.StringVar(&root, "root", "", "Directory that contains uncompiled application assets. Defaults to current working directory.")
 	s.StringVar(&logFilePath, "log", "", "Path to log file")
 	s.StringVar(&port, "port", "8090", "port on which the application will listen")
-	s.BoolVar(&Debug, "debug", true, "Sets the env.Debug value within Gadget")
 }
 
 // Run sets up a logger and runs the Handler.
