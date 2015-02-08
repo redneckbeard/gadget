@@ -169,32 +169,32 @@ type URLParamController struct {
 }
 
 func (c *URLParamController) Index(r *Request) (int, interface{}) {
-	return 200, r.UrlParams["urlparam_id"]
+	return 200, r.UrlParams["url_param_id"]
 }
 
 func (c *URLParamController) Show(r *Request) (int, interface{}) {
-	return 200, r.UrlParams["urlparam_id"]
+	return 200, r.UrlParams["url_param_id"]
 }
 
 func (c *URLParamController) Create(r *Request) (int, interface{}) {
-	return 200, r.UrlParams["urlparam_id"]
+	return 200, r.UrlParams["url_param_id"]
 }
 
 func (c *URLParamController) Update(r *Request) (int, interface{}) {
-	return 200, r.UrlParams["urlparam_id"]
+	return 200, r.UrlParams["url_param_id"]
 }
 
 func (c *URLParamController) Destroy(r *Request) (int, interface{}) {
-	return 200, r.UrlParams["urlparam_id"]
+	return 200, r.UrlParams["url_param_id"]
 }
 
 //Route.Respond should pass UrlParams to objectPattern controller methods
 func (s *RouteSuite) TestRouterespondShouldPassUrlparamsToObjectpatternControllerMethods(c *C) {
-	r := rta.newRoute("urlparams", nil)
+	r := rta.newRoute("url-params", nil)
 	r.buildPatterns("")
 	objVerbs := []string{"GET", "PUT", "DELETE"}
 	for _, verb := range objVerbs {
-		req, _ := http.NewRequest(verb, "http://127.0.0.1:8000/urlparams/42", nil)
+		req, _ := http.NewRequest(verb, "http://127.0.0.1:8000/url-params/42", nil)
 		status, body, _ := r.Respond(newRequest(req))
 		c.Assert(status, Equals, 200)
 		c.Assert(body.(string), Equals, "42")
@@ -203,11 +203,11 @@ func (s *RouteSuite) TestRouterespondShouldPassUrlparamsToObjectpatternControlle
 
 //Route.Respond should not pass UrlParams to indexPattern controller methods
 func (s *RouteSuite) TestRouterespondShouldNotPassUrlparamsToIndexpatternControllerMethods(c *C) {
-	r := rta.newRoute("urlparams", nil)
+	r := rta.newRoute("url-params", nil)
 	r.buildPatterns("")
 	idxVerbs := []string{"GET", "POST"}
 	for _, verb := range idxVerbs {
-		req, _ := http.NewRequest(verb, "http://127.0.0.1:8000/urlparams", nil)
+		req, _ := http.NewRequest(verb, "http://127.0.0.1:8000/url-params", nil)
 		status, body, _ := r.Respond(newRequest(req))
 		c.Assert(status, Equals, 200)
 		c.Assert(body.(string), Equals, "")
@@ -215,40 +215,40 @@ func (s *RouteSuite) TestRouterespondShouldNotPassUrlparamsToIndexpatternControl
 }
 
 func AclFilter(r *Request) (status int, body interface{}) {
-	if r.UrlParams["urlparam_id"] == "10" {
+	if r.UrlParams["url_param_id"] == "10" {
 		status, body = 403, "VERBOTEN"
 	}
 	return
 }
 
 func (s *RouteSuite) TestFilterReturnValueUsed(c *C) {
-	ctrl, _ := rta.getController("urlparams")
+	ctrl, _ := rta.getController("url-params")
 	ctrl.Filter(AclFilter, "update")
-	r := rta.newRoute("urlparams", nil)
+	r := rta.newRoute("url-params", nil)
 	r.buildPatterns("")
-	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/urlparams/10", nil)
+	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/url-params/10", nil)
 	status, body, _ := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 403)
 	c.Assert(body.(string), Equals, "VERBOTEN")
 }
 
 func (s *RouteSuite) TestFilterOnlyAppliedToSpecifiedActions(c *C) {
-	ctrl, _ := rta.getController("urlparams")
+	ctrl, _ := rta.getController("url-params")
 	ctrl.Filter(AclFilter, "update")
-	r := rta.newRoute("urlparams", nil)
+	r := rta.newRoute("url-params", nil)
 	r.buildPatterns("")
-	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/urlparams/10", nil)
+	req, _ := http.NewRequest("GET", "http://127.0.0.1:8000/url-params/10", nil)
 	status, body, _ := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 200)
 	c.Assert(body.(string), Equals, "10")
 }
 
 func (s *RouteSuite) TestRespondContinuesAfterNilFilterReturn(c *C) {
-	ctrl, _ := rta.getController("urlparams")
+	ctrl, _ := rta.getController("url-params")
 	ctrl.Filter(AclFilter, "update")
-	r := rta.newRoute("urlparams", nil)
+	r := rta.newRoute("url-params", nil)
 	r.buildPatterns("")
-	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/urlparams/11", nil)
+	req, _ := http.NewRequest("PUT", "http://127.0.0.1:8000/url-params/11", nil)
 	status, body, _ := r.Respond(newRequest(req))
 	c.Assert(status, Equals, 200)
 	c.Assert(body.(string), Equals, "11")
