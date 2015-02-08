@@ -1,6 +1,7 @@
 package strutil
 
 import (
+	"bufio"
 	"regexp"
 	"strings"
 )
@@ -14,9 +15,22 @@ func init() {
 
 func depascal(pascal, separator string) string {
 	matches := []string{}
-	for _, match := range pascalSegment.FindAllString(pascal, -1) {
-		matches = append(matches, strings.ToLower(match))
+	scanner := bufio.NewScanner(strings.NewReader(pascal))
+	scanner.Split(bufio.ScanBytes)
+	var match, lastSeen string
+	for scanner.Scan() {
+		c := scanner.Text()
+		if strings.ToUpper(c) == c && strings.ToLower(lastSeen) == lastSeen && !strings.ContainsAny(c, "1234568790") && lastSeen != "" {
+			matches = append(matches, strings.ToLower(match+lastSeen))
+			match, lastSeen = "", c
+		} else if strings.ToLower(c) == c && strings.ToUpper(lastSeen) == lastSeen && lastSeen != "" && len(match) > 0 && match[len(match)-1:] == strings.ToUpper(match[len(match)-1:]) {
+			matches = append(matches, strings.ToLower(match))
+			match, lastSeen = lastSeen, c	
+		} else {
+			match, lastSeen = match+lastSeen, c
+		}
 	}
+	matches = append(matches, strings.ToLower(match+lastSeen))
 	return strings.Join(matches, separator)
 }
 

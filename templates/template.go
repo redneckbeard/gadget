@@ -28,7 +28,6 @@ func templatePath(components ...string) string {
 
 func loadWithRootFallback(templateName, controllerName string, helpers template.FuncMap) (*template.Template, error) {
 	t, err := template.New(templateName + ".html").Funcs(helpers).ParseFiles(templatePath(controllerName, templateName))
-	env.Log(controllerName, templateName, err)
 	if err != nil {
 		t, err = template.New(templateName + ".html").Funcs(helpers).ParseFiles(templatePath(templateName))
 		if err != nil {
