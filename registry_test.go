@@ -55,7 +55,7 @@ func (s *RegistrySuite) TestRoutingresourcefooHasIndexpatternFoo(c *C) {
 //Resource("foo") should have an objectPattern of ^foo(?:/(?P<foo_id>\d+))?$
 func (s *RegistrySuite) TestRoutingresourcefooHasObjectpatternFoopfoo_Idd(c *C) {
 	r := r.Resource("foos")
-	c.Assert(r.objectPattern.String(), Equals, `^foos(?:/(?P<foo_id>\d+))?$`)
+	c.Assert(r.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)$`)
 }
 
 //Resource("foo", Resource("bar"), Resource("baz")) :
@@ -77,7 +77,7 @@ func (s *RegistrySuite) TestFirstRouteHasIndexpatternFooAndObjectpatternFoopfoo_
 	r := r.Resource("foos", r.Resource("bars"), r.Resource("bazs"))
 	first := r.flatten()[0]
 	c.Assert(first.indexPattern.String(), Equals, `^foos$`)
-	c.Assert(first.objectPattern.String(), Equals, `^foos(?:/(?P<foo_id>\d+))?$`)
+	c.Assert(first.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)$`)
 }
 
 //* Second route has indexPattern of ^foo/(?P<foo_id>\d+)/bar$ and objectPattern of ^foo/(?<foo_id>\d+)/bar(?:/(?<bar_id>\d+))?$
@@ -85,7 +85,7 @@ func (s *RegistrySuite) TestSecondRouteHasIndexpatternFoopfoo_IddbarAndObjectpat
 	r := r.Resource("foos", r.Resource("bars"), r.Resource("bazs"))
 	first := r.flatten()[1]
 	c.Assert(first.indexPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars$`)
-	c.Assert(first.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars(?:/(?P<bar_id>\d+))?$`)
+	c.Assert(first.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars/(?P<bar_id>\d+)$`)
 }
 
 //* Third route has indexPattern of ^foo/(?P<foo_id>\d+)/baz$ and objectPattern of ^foo/(?<foo_id>\d+)/baz(?:/(?<baz_id>\d+))?$
@@ -93,7 +93,7 @@ func (s *RegistrySuite) TestThirdRouteHasIndexpatternFoopfoo_IddbazAndObjectpatt
 	r := r.Resource("foos", r.Resource("bars"), r.Resource("bazs"))
 	first := r.flatten()[2]
 	c.Assert(first.indexPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bazs$`)
-	c.Assert(first.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bazs(?:/(?P<baz_id>\d+))?$`)
+	c.Assert(first.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bazs/(?P<baz_id>\d+)$`)
 }
 
 //Resource("foo", Resource("bar", Resource("baz"))) :
@@ -117,7 +117,7 @@ func (s *RegistrySuite) TestThirdRouteHasIndexpatternFoopfoo_Iddbarpbar_IddbazAn
 	r := r.Resource("foos", r.Resource("bars", r.Resource("bazs")))
 	route := r.flatten()[2]
 	c.Assert(route.indexPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars/(?P<bar_id>\d+)/bazs$`)
-	c.Assert(route.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars/(?P<bar_id>\d+)/bazs(?:/(?P<baz_id>\d+))?$`)
+	c.Assert(route.objectPattern.String(), Equals, `^foos/(?P<foo_id>\d+)/bars/(?P<bar_id>\d+)/bazs/(?P<baz_id>\d+)$`)
 }
 
 //Prefixed("foo", Resource("bar"), Resource("baz")) :
@@ -139,7 +139,7 @@ func (s *RegistrySuite) TestFirstRouteHasIndexpatternFoobarAndObjectpatternFooba
 	r := r.Prefixed("foo", r.Resource("bars"), r.Resource("bazs"))
 	subroute := r.flatten()[0]
 	c.Assert(subroute.indexPattern.String(), Equals, `^foo/bars$`)
-	c.Assert(subroute.objectPattern.String(), Equals, `^foo/bars(?:/(?P<bar_id>\d+))?$`)
+	c.Assert(subroute.objectPattern.String(), Equals, `^foo/bars/(?P<bar_id>\d+)$`)
 }
 
 //* Second route has indexPattern of ^foo/baz$ and objectPattern of ^foo/baz(?:/(?P<baz_id>\d+))?$
@@ -147,5 +147,5 @@ func (s *RegistrySuite) TestSecondRouteHasIndexpatternFoobazAndObjectpatternFoob
 	r := r.Prefixed("foo", r.Resource("bars"), r.Resource("bazs"))
 	subroute := r.flatten()[1]
 	c.Assert(subroute.indexPattern.String(), Equals, `^foo/bazs$`)
-	c.Assert(subroute.objectPattern.String(), Equals, `^foo/bazs(?:/(?P<baz_id>\d+))?$`)
+	c.Assert(subroute.objectPattern.String(), Equals, `^foo/bazs/(?P<baz_id>\d+)$`)
 }

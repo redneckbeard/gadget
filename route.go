@@ -10,6 +10,7 @@ import (
 
 type route struct {
 	segment                                              string
+	segments                                             []*segment
 	indexPattern, objectPattern, actionPattern, hostname *regexp.Regexp
 	handler                                              http.HandlerFunc
 	controller                                           Controller
@@ -24,29 +25,79 @@ func (rte *route) String() string {
 	return rte.indexPattern.String()
 }
 
-func (rte *route) buildPatterns(prefix string) {
-	if rte.isRoot && prefix != "" {
-		prefix = prefix[:len(prefix)-1]
-	}
-	basePattern := prefix + rte.segment
-	rte.indexPattern = regexp.MustCompile("^" + basePattern + "$")
-	if rte.controller != nil {
-		patternWithId := fmt.Sprintf(`^%s(?:/(?P<%s_id>%s))?$`, basePattern, strings.Replace(nameFromController(rte.controller), "-", "_", -1), rte.controller.IdPattern())
-		rte.objectPattern = regexp.MustCompile(patternWithId)
-		actions := rte.controller.extraActionNames()
-		if len(actions) > 0 {
-			actionPatternString := fmt.Sprintf(`^%s/(?:%s)$`, basePattern, strings.Join(actions, "|"))
-			rte.actionPattern = regexp.MustCompile(actionPatternString)
+type segmentList []*segment
+
+func (sl segmentList) patternComponents() (*segment, []string) {
+	allButLast := sl[:len(sl)-1]
+	segments := []string{}
+	for _, s := range allButLast {
+		if s.isPrefix {
+			segments = append(segments, s.name)
+		} else {
+			segments = append(segments, s.name, s.objectSuffix())
 		}
 	}
-	// Calls to Prefixed generate routes without controllers, and the value of prefix is already all set for those
+	return sl[len(sl)-1], segments
+}
+
+func (sl segmentList) indexPattern() *regexp.Regexp {
+	final, segments := sl.patternComponents()
+	return finalPattern(segments, final.name)
+}
+
+func (sl segmentList) objectPattern() *regexp.Regexp {
+	final, segments := sl.patternComponents()
+	return finalPattern(segments, final.name, final.objectSuffix())
+}
+
+func (sl segmentList) actionPattern() *regexp.Regexp {
+	final, segments := sl.patternComponents()
+	return finalPattern(segments, final.name, final.actionSuffix())
+}
+
+func finalPattern(segments []string, suffixes ...string) *regexp.Regexp {
+	segments = append(segments, suffixes...)
+	return regexp.MustCompile(fmt.Sprintf("^%s$", strings.Join(segments, "/")))
+}
+
+type segment struct {
+	name, paramName, idPattern string
+	isPrefix                   bool
+	actions                    []string
+}
+
+func (s *segment) objectSuffix() string {
+	return fmt.Sprintf("(?P<%s_id>%s)", s.paramName, s.idPattern)
+}
+
+func (s *segment) actionSuffix() string {
+	return fmt.Sprintf("(?:%s)", strings.Join(s.actions, "|"))
+}
+
+func (rte *route) buildPatterns(prefix string, segments ...*segment) {
 	if rte.controller != nil {
-		prefix += fmt.Sprintf(`%s/(?P<%s_id>%s)/`, rte.segment, nameFromController(rte.controller), rte.controller.IdPattern())
+		rte.segments = append(segments, &segment{
+			name:      rte.segment,
+			paramName: strings.Replace(nameFromController(rte.controller), "-", "_", -1),
+			idPattern: rte.controller.IdPattern(),
+			actions:   rte.controller.extraActionNames(),
+		})
 	} else {
-		prefix += "/"
+		rte.segments = append(segments, &segment{
+			name:     prefix,
+			isPrefix: true,
+		})
 	}
 	for _, r := range rte.subroutes {
-		r.buildPatterns(prefix)
+		r.buildPatterns(prefix, rte.segments...)
+	}
+	patterns := segmentList(rte.segments)
+	if rte.controller != nil {
+		rte.indexPattern = patterns.indexPattern()
+		rte.objectPattern = patterns.objectPattern()
+		if len(rte.controller.extraActionNames()) > 0 {
+			rte.actionPattern = patterns.actionPattern()
+		}
 	}
 }
 

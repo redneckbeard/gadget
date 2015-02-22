@@ -28,7 +28,7 @@ func ExampleRoutes() {
 	ex.Configure()
 	ex.printRoutes()
 	// Output:
-	// ^(?:/(?P<index_id>\d+))?$ 						 gadget.IndexController
-	// ^writing/authors(?:/(?P<author_id>\d+))?$ 				 gadget.AuthorController
-	// ^writing/authors/(?P<author_id>\d+)/entries(?:/(?P<entry_id>\d+))?$ 	 gadget.EntryController
+	// ^/(?P<index_id>\d+)$ 						 gadget.IndexController
+	// ^writing/authors/(?P<author_id>\d+)$ 				 gadget.AuthorController
+	// ^writing/authors/(?P<author_id>\d+)/entries/(?P<entry_id>\d+)$ 	 gadget.EntryController
 }
